@@ -10,7 +10,7 @@ using System.Web.Mvc;
 using MercuryHealth.Models;
 using MercuryHealth.Web.Models;
 using System.Diagnostics;
-using Microsoft.ApplicationInsights;
+
 #endregion
 
 namespace MercuryHealth.Web.Controllers
@@ -90,9 +90,9 @@ namespace MercuryHealth.Web.Controllers
                 Trace.TraceInformation("Created FoodLogEntry {0}", foodLogEntry.Description);
 
                 // Application Insights - Track Events
-                var telemetry = new TelemetryClient();
-                telemetry.TrackTrace("Created FoodLogEntry " + foodLogEntry.Id.ToString() + " " + foodLogEntry.Description);
-                telemetry.TrackEvent("Created FoodLogEntry " + foodLogEntry.Id.ToString() + " " + foodLogEntry.Description);
+                //var telemetry = new TelemetryClient();
+                //telemetry.TrackTrace("Created FoodLogEntry " + foodLogEntry.Id.ToString() + " " + foodLogEntry.Description);
+                //telemetry.TrackEvent("Created FoodLogEntry " + foodLogEntry.Id.ToString() + " " + foodLogEntry.Description);
                 //if (!string.IsNullOrEmpty(foodLogEntry.Color))
                 //{
                 //    telemetry.TrackEvent("Creating new food with color field " + foodLogEntry.Id.ToString() + " Color: " + foodLogEntry.Color + " Description:" + foodLogEntry.Description);
@@ -183,9 +183,9 @@ namespace MercuryHealth.Web.Controllers
 
             repository.Create(newFoodLogEntry);
             // Application Insights - Track Events
-            var telemetry = new TelemetryClient();
-            telemetry.TrackTrace("Created FoodLogEntry from twitter by " + user + ": " + newFoodLogEntry.Id.ToString() + " " + newFoodLogEntry.Description);
-            telemetry.TrackEvent("Created FoodLogEntry from twitter by " + user + ": " + newFoodLogEntry.Id.ToString() + " " + newFoodLogEntry.Description);
+            //var telemetry = new TelemetryClient();
+            //telemetry.TrackTrace("Created FoodLogEntry from twitter by " + user + ": " + newFoodLogEntry.Id.ToString() + " " + newFoodLogEntry.Description);
+            //telemetry.TrackEvent("Created FoodLogEntry from twitter by " + user + ": " + newFoodLogEntry.Id.ToString() + " " + newFoodLogEntry.Description);
 
 
             return null;

@@ -12,9 +12,6 @@ using MercuryHealth.Models;
 using System.Web.Optimization;
 using System.Data.Entity;
 using System.Diagnostics;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.ApplicationInsights.DataContracts;
 
 namespace MecuryHealth
 { 
@@ -109,14 +106,14 @@ namespace MecuryHealth
         }
 
         // Telemetry initializer class for Correlating with build versions
-        public class MyTelemetryInitializer : IContextInitializer
-        {
-            public void Initialize(TelemetryContext context)
-            {
-                // Set the Application Version from the *.dll assembly
-                context.Properties["AppVersion"] = Helper.GetAssemblyVersionOnly();
-            }
-        }
+        //public class MyTelemetryInitializer : IContextInitializer
+        //{
+        //    public void Initialize(TelemetryContext context)
+        //    {
+        //        // Set the Application Version from the *.dll assembly
+        //        context.Properties["AppVersion"] = Helper.GetAssemblyVersionOnly();
+        //    }
+        //}
 
         [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
         public class AiHandleErrorAttribute : HandleErrorAttribute
@@ -128,8 +125,8 @@ namespace MecuryHealth
                     //If customError is Off, then AI HTTPModule will report the exception
                     if (filterContext.HttpContext.IsCustomErrorEnabled)
                     {   //or reuse instance (recommended!). see note above  
-                        var ai = new TelemetryClient();
-                        ai.TrackException(filterContext.Exception);
+                        //var ai = new TelemetryClient();
+                        //ai.TrackException(filterContext.Exception);
                     }
                 }
                 base.OnException(filterContext);

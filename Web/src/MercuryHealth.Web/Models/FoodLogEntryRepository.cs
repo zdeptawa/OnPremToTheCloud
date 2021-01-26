@@ -1,6 +1,5 @@
 ﻿#region Namespaces
 using MercuryHealth.Models;
-using Microsoft.ApplicationInsights;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -40,11 +39,11 @@ namespace MercuryHealth.Web.Models
                 if (duplicateFoodLogEntry != null)
                 {
                     // Application Insights - Track Event
-                    var telemetry = new TelemetryClient();
+                    //var telemetry = new TelemetryClient();
 
-                    // Trace telemetry to create custom diagnostic log
-                    telemetry.TrackTrace("FoodLogEntry, " + duplicateFoodLogEntry.Description + " " + duplicateFoodLogEntry.MealTime.ToString() + ", duplicate in database");
-                    telemetry.TrackEvent("FoodLogEntry, " + duplicateFoodLogEntry.Description + " " + duplicateFoodLogEntry.MealTime.ToString() + ", duplicate in database");
+                    //// Trace telemetry to create custom diagnostic log
+                    //telemetry.TrackTrace("FoodLogEntry, " + duplicateFoodLogEntry.Description + " " + duplicateFoodLogEntry.MealTime.ToString() + ", duplicate in database");
+                    //telemetry.TrackEvent("FoodLogEntry, " + duplicateFoodLogEntry.Description + " " + duplicateFoodLogEntry.MealTime.ToString() + ", duplicate in database");
 
                     throw new ArgumentException("You cannot add two identical food log entries for the same day. Change the quantity.");
                 }
