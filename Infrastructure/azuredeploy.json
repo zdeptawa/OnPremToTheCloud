@@ -8,11 +8,31 @@
             "metadata": {
                 "description": "Location for the resources to be deployed"
             }
+        },
+        "dscTemplateSpec": {
+            "type": "string",
+            "metadata": {
+                "description": "template spec for the DSC Storage"
+            }
         }
     },
     "functions": [],
-    "variables": {},
+    "variables": {
+        "vmname": "mercuryhealthvm",
+        "password": "P@ssw0rd!414"
+    },
     "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-06-01",
+            "name": "DscStorageDeployment",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "id": "[parameters('dscTemplateSpec')]"
+                }
+            }
+        },
         {
             "name": "vmosdiskstorage",
             "type": "Microsoft.Storage/storageAccounts",
@@ -117,7 +137,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2019-07-01",
-            "name": "mercuryheathvm",
+            "name": "[variables('vmname')]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', 'vmNic')]",
@@ -130,7 +150,7 @@
                 "osProfile": {
                     "computerName": "mercury",
                     "adminUsername": "abel",
-                    "adminPassword": "P@ssw0rd!414"
+                    "adminPassword": "[variables('password')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -163,19 +183,51 @@
         {
             "type": "Microsoft.SqlVirtualMachine/sqlVirtualMachines",
             "apiVersion": "2017-03-01-preview",
-            "name": "mercuryheathvm",
+            "name": "[variables('vmname')]",
             "location": "[parameters('location')]",
-            "dependsOn":[
-                "[resourceId('Microsoft.Compute/virtualMachines', 'mercuryheathvm')]"
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmname'))]"
             ],
             "properties": {
-                "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', 'mercuryheathvm')]",
+                "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('vmname'))]",
                 "sqlImageOffer": "SQL2017-WS2016",
                 "sqlServerLicenseType": "PAYG",
                 "sqlManagement": "Full",
                 "sqlImageSku": "Developer"
             }
 
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vmname'), 'Microsoft.Powershell.DSC')]",
+            "apiVersion": "2018-06-01",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines',variables('vmname'))]",
+                "[resourceId('Microsoft.Resources/deployments', 'DscStorageDeployment')]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Powershell",
+                "type": "DSC",
+                "typeHandlerVersion": "2.83",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "wmfVersion": "latest",
+                    "configuration": {
+                        "url": "https://optcdsc.blob.core.windows.net/configurations/MercHealthConfig.ps1.zip",
+                        "script": "MercHealthConfig.ps1",
+                        "function": "MercuryHealthWeb"
+                    }
+                },
+                "protectedSettings": {
+                    "configurationArguments": {
+                        "AppPoolCredential": {
+                            "userName": "abel",
+                            "password": "[variables('password')]"
+                        }
+                    }
+                }
+            }
         }
     ],
     "outputs": {
@@ -186,6 +238,10 @@
         "ip": {
             "type": "string",
             "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'vmPublicIp')).ipAddress]"
+        },
+        "configuration_storage": {
+            "type": "string",
+            "value": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts','optcdsc')).primaryEndpoints.blob, 'configurations')]"
         }
     }
 }
