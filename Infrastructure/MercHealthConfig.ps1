@@ -279,42 +279,16 @@ Configuration MercuryHealthBase {
 Configuration MercuryHealthWeb {
     param (
         [PSCredential] $AppPoolCredential,
-        [string] $ApplicationZipUri
+        [string] $ApplicationZipUri,
+        [string] $AzureDevOpsToken
     )
     Import-DscResource -ModuleName xWebAdministration -ModuleVersion 3.2.0
     Node localhost {
         MercuryHealthBase BaseConfig {
         }
 
-        File RemoveDownloadedZip {
-            DestinationPath = 'C:\MercuryHealth.zip'
-            Ensure          = 'Absent'
-            Force           = $true
-            Type            = 'File'
-            DependsOn       = '[MercuryHealthBase]BaseConfig'
-        }
-
-        ### TODO: Parameterize the url from the template.
-        Script DownloadWebContent {
-            GetScript  = {
-                return @{
-                    Result = (Test-Path 'c:\MercuryHealth.zip')
-                }
-            }
-            TestScript = {
-                Test-Path -Path 'C:\MercuryHealth.zip'
-            }
-            SetScript  = {
-                Invoke-WebRequest "${ApplicationZipUri}/MercuryHealth.zip" -outfile 'c:\MercuryHealth.zip' -UseBasicParsing
-            }
-            DependsOn  = '[File]RemoveDownloadedZip'
-        }
-
-        Archive UnpackWebSite {
-            Destination = 'C:\MercuryHealth'
-            Path        = 'C:\MercuryHealth.zip'
-            Force       = $true
-            DependsOn   = '[Script]DownloadWebContent'
+        File WebsiteDirectory {
+            DestinationPath = 'C:\MercuryHealth'
         }
 
         xWebAppPool MercHealthPool {

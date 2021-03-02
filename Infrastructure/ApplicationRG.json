@@ -14,6 +14,12 @@
             "metadata": {
                 "description": "description"
             }
+        },
+        "azureDevOpsToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Azure DevOps Token for registering the vm to the deployment environment."
+            }
         }
     },
     "functions": [],
@@ -58,7 +64,22 @@
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "2019-11-01",
             "location": "[parameters('location')]",
-            "properties": {}
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "HttpRule",
+                        "properties": {
+                            "description": "Allow Http Traffics",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "80",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
         },
         {
             "name": "internalNetwork",
@@ -208,7 +229,9 @@
                         "AppPoolCredential": {
                             "userName": "abel",
                             "password": "[variables('password')]"
-                        }
+                        },
+                        "ApplicationZipUri": "[concat(parameters('dscBlobStorageUri'), variables('configurationZipName'))]",
+                        "AzureDevOpsToken": "[parameters('azureDevOpsToken')]"
                     }
                 }
             }

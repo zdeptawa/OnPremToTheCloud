@@ -3,7 +3,10 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "dscBlobStorageUri": {
-            "value": "${dscBlobStorageUri}" 
+            "value": "REPLACEME" 
+        },
+        "azureDevOpsToken": {
+            "value": "REPLACEME"
         }
 
     }
