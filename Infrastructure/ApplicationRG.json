@@ -9,10 +9,10 @@
                 "description": "Location for the resources to be deployed"
             }
         },
-        "dscTemplateSpec": {
+        "dscBlobStorageUri": {
             "type": "string",
             "metadata": {
-                "description": "template spec for the DSC Storage"
+                "description": "description"
             }
         }
     },
@@ -20,25 +20,10 @@
     "variables": {
         "vmname": "mercuryhealthvm",
         "username": "abel",
-        "password": "P@ssw0rd!414"
+        "password": "P@ssw0rd!414",
+        "configurationZipName": "MercHealthConfig.ps1.zip"
     },
     "resources": [
-        {
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2020-06-01",
-            "name": "DscStorageDeployment",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "id": "[parameters('dscTemplateSpec')]"
-                },
-                "parameters": {
-                    "location": {
-                        "value": "[parameters('location')]"
-                    }
-                }
-            }
-        },
         {
             "name": "vmosdiskstorage",
             "type": "Microsoft.Storage/storageAccounts",
@@ -203,8 +188,7 @@
             "apiVersion": "2018-06-01",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines',variables('vmname'))]",
-                "[resourceId('Microsoft.Resources/deployments', 'DscStorageDeployment')]"
+                "[resourceId('Microsoft.Compute/virtualMachines',variables('vmname'))]"
             ],
             "properties": {
                 "publisher": "Microsoft.Powershell",
@@ -214,7 +198,7 @@
                 "settings": {
                     "wmfVersion": "latest",
                     "configuration": {
-                        "url": "https://optcdsc.blob.core.windows.net/configurations/MercHealthConfig.ps1.zip",
+                        "url": "[concat(parameters('dscBlobStorageUri'), variables('configurationZipName'))]",
                         "script": "MercHealthConfig.ps1",
                         "function": "MercuryHealthWeb"
                     }

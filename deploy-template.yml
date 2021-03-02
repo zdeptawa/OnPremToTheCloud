@@ -1,0 +1,14 @@
+steps:
+- task: IISWebAppDeploymentOnMachineGroup@0
+  inputs:
+    WebSiteName: '$(websiteName)'
+    Package: '$(Pipeline.Workspace)\**\*.zip'
+    
+- task: SqlDacpacDeploymentOnMachineGroup@0
+  inputs:
+    TaskType: 'dacpac'
+    DacpacFile: '$(Pipeline.Workspace)\**\*.dacpac'
+    TargetMethod: 'server'
+    ServerName: 'localhost'
+    DatabaseName: '$(databaseName)'
+    AuthScheme: 'windowsAuthentication'
