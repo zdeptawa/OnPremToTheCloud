@@ -281,6 +281,7 @@ Configuration MercuryHealthWeb {
     Import-DscResource -ModuleName xWebAdministration -ModuleVersion 3.2.0
     Node localhost {
         MercuryHealthBase BaseConfig {}
+
         File RemoveDownloadedZip {
             DestinationPath = 'C:\MercuryHealth.zip'
             Ensure = 'Absent'
@@ -288,6 +289,8 @@ Configuration MercuryHealthWeb {
             Type = 'File'
             DependsOn = '[MercuryHealthBase]BaseConfig'
         }
+
+        ### TODO: Parameterize the url from the template.
         Script DownloadWebContent {
             GetScript = {
                 return @{
@@ -302,12 +305,14 @@ Configuration MercuryHealthWeb {
             }
             DependsOn = '[File]RemoveDownloadedZip'
         }
+
         Archive UnpackWebSite {
             Destination = 'C:\MercuryHealth'
             Path = 'C:\MercuryHealth.zip'
             Force = $true
             DependsOn = '[Script]DownloadWebContent'
         }
+
         xWebAppPool MercHealthPool {
             Name = 'MercuryHealth'
             State = 'Started'
@@ -318,6 +323,7 @@ Configuration MercuryHealthWeb {
             identityType = 'SpecificUser'
             Credential = $AppPoolCredential            
         }
+
         xWebSite RemoveDefaultWebsite {
             Ensure          = 'Present'
             Name            = 'Default Web Site'
@@ -325,6 +331,7 @@ Configuration MercuryHealthWeb {
             ServerAutoStart = $false
             PhysicalPath    = 'C:\inetpub\wwwroot'
         }
+
         xWebSite MercuryHealthSite {
             Name = "Mercury Health"
             Ensure = "Present"

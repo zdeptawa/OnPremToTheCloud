@@ -2,23 +2,38 @@ param (
     $ResourceGroupName = 'onpremtothecloud',
     $StorageAccountName = 'optcdsc',
     $StorageContainerName = 'configurations',
-    $ConfigurationPath = 'MercHealthConfig.ps1'
+    $ConfigurationPath = 'MercHealthConfig.ps1',
+    [switch]$FreshStart
 )
 
+if ($FreshStart) {
+    Remove-AzResourceGroup -Name $ResourceGroupName -Force
+    Remove-Item ./current.parameters.json -Force
+}
 
+### Policy?
+
+# Set up resource group
 New-AzResourceGroup -Name $ResourceGroupName -Location 'eastus'
 $TemplateSpecParams = @{
-    Version =  '1.0.0'
+    Version =  '1.0.2'
     ResourceGroupName = $ResourceGroupName 
     Location = 'eastus' 
 }
+
+# Deploy templates to template specs
 New-AzTemplateSpec -Name MercuryHealthWeb -TemplateFile ./azuredeploy.json @TemplateSpecParams
 New-AzTemplateSpec -Name DscStorage -TemplateFile ./DscStorage.json @TemplateSpecParams
 
-$DSCStorageSpec = "/subscriptions/$((Get-AzContext).Subscription.Id)/resourceGroups/$ResourceGroupName/providers/Microsoft.Resources/templateSpecs/DscStorage/versions/1.0.0"
-$MercuryHealthSpec = "/subscriptions/$((Get-AzContext).Subscription.Id)/resourceGroups/$ResourceGroupName/providers/Microsoft.Resources/templateSpecs/DscStorage/versions/1.0.0"
+# 
+$DSCStorageSpec = "/subscriptions/$((Get-AzContext).Subscription.Id)/resourceGroups/$ResourceGroupName/providers/Microsoft.Resources/templateSpecs/DscStorage/versions/$($TemplateSpecParams.Version)"
+$MercuryHealthSpec = "/subscriptions/$((Get-AzContext).Subscription.Id)/resourceGroups/$ResourceGroupName/providers/Microsoft.Resources/templateSpecs/MercuryHealthWeb/versions/$($TemplateSpecParams.Version)"
 
-New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateSpecId $DSCStorageSpec
+New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateSpecId $DSCStorageSpec -Mode Complete -Force
+
+# Stage the application files
+$Storage = Get-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName
+Set-AzStorageBlobContent -File ../MercuryHealth.zip -Container $StorageContainerName -Context $Storage.Context
 
 if (-not (Get-Module -ListAvailable xWebAdministration)) {
     Install-Module xWebAdministration -RequiredVersion 3.2.0 -Scope CurrentUser
@@ -32,12 +47,17 @@ $Parameters = @{
 }
 
 Publish-AzVMDscConfiguration @Parameters
+
+$ExecutionContext.InvokeCommand.ExpandString((get-content './azuredeploy.parameters.json' -raw)) | 
+    out-file current.parameters.json -Force
 $FullDeploymentParameters = @{
     ResourceGroupName = $ResourceGroupName
     TemplateSpecId = $MercuryHealthSpec 
-    TemplateParameterObject =  @{ dscTemplateSpec = $DSCStorageSpec }
+    TemplateParameterFile = 'current.parameters.json'
+    Mode = 'Complete'
+    Force = $true
 }
-New-AzResourceGroupDeployment @FullDeploymentParameters
+New-AzResourceGroupDeployment @FullDeploymentParameters 
 
 
 <#

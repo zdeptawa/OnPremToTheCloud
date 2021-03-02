@@ -19,6 +19,7 @@
     "functions": [],
     "variables": {
         "vmname": "mercuryhealthvm",
+        "username": "abel",
         "password": "P@ssw0rd!414"
     },
     "resources": [
@@ -30,6 +31,11 @@
                 "mode": "Incremental",
                 "templateLink": {
                     "id": "[parameters('dscTemplateSpec')]"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[parameters('location')]"
+                    }
                 }
             }
         },
@@ -95,12 +101,6 @@
                             },
                             "addressPrefix": "10.0.0.0/24"
                         }
-                    },
-                    {
-                        "name": "Internal",
-                        "properties": {
-                            "addressPrefix": "10.0.1.0/24"
-                        }
                     }
                 ]
             }
@@ -149,7 +149,7 @@
                 },
                 "osProfile": {
                     "computerName": "mercury",
-                    "adminUsername": "abel",
+                    "adminUsername": "[variables('username')]",
                     "adminPassword": "[variables('password')]"
                 },
                 "storageProfile": {
@@ -199,7 +199,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(variables('vmname'), 'Microsoft.Powershell.DSC')]",
+            "name": "[concat(variables('vmname'), '/Microsoft.Powershell.DSC')]",
             "apiVersion": "2018-06-01",
             "location": "[parameters('location')]",
             "dependsOn": [
@@ -234,14 +234,6 @@
         "hostname": {
             "type": "string",
             "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'vmPublicIp')).dnsSettings.fqdn]"
-        },
-        "ip": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'vmPublicIp')).ipAddress]"
-        },
-        "configuration_storage": {
-            "type": "string",
-            "value": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts','optcdsc')).primaryEndpoints.blob, 'configurations')]"
         }
     }
 }

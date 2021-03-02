@@ -50,5 +50,10 @@
             }
         }
     ],
-    "outputs": {}
+    "outputs": {
+        "configuration_storage": {
+            "type": "string",
+            "value": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts','optcdsc')).primaryEndpoints.blob, 'configurations')]"
+        }
+    }
 }

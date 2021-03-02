@@ -1,0 +1,9 @@
+{
+    "": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "dscTemplateSpec": {
+            "value": "/subscriptions/13ae0661-466f-4189-9095-cbd2e68a485f/resourceGroups/onpremtothecloud/providers/Microsoft.Resources/templateSpecs/DscStorage/versions/1.0.2" 
+        }
+    }
+}
