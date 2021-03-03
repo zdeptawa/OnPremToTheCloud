@@ -4,7 +4,6 @@ param (
     $StorageAccountName = 'optcdsc',
     $StorageContainerName = 'configurations',
     $Location = 'eastus',
-    [ValidateNotNullOrEmpty()]
     $AzureDevOpsToken = $env:AzureDevOpsEnvironmentPat,
     [switch]$FreshStart,
     [switch]$ManagementRGOnly,
@@ -13,7 +12,14 @@ param (
 # This is set in a variable in the ApplicationRG deployment.
 # If you change this, then you have to update the ARM template
 
+if ([string]::IsNullOrEmpty($AzureDevOpsToken)) {
+    throw "Please provide -AzureDevOpsToken or set `$env:AzureDevOpsEnvironmentPat."
+}
+
 $ConfigurationPath = 'MercHealthConfig.ps1'
+$PolicyDefinitionPath = './network-security-rule-with-port.json'
+$PolicyJson = Get-Content $PolicyDefinitionPath -Raw | ConvertFrom-Json  
+
 
 if ($FreshStart) {
     if (-not $ManagementRGOnly) {
@@ -29,7 +35,33 @@ if ($FreshStart) {
         Out-Null
     }
     Write-Host ""; Write-Host "Removing parameters file."
-    Remove-Item './current.parameters.json' -Force | Out-Null
+    Remove-Item './current.parameters.json' -Force -ErrorAction SilentlyContinue | Out-Null
+}
+
+Write-Host "Checking Azure Policy status"
+$Policy = Get-AzPolicyDefinition -Name $PolicyJson.displayName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+if ($Policy) {
+    if ($PolicyJson.metadata.version -eq $Policy.Properties.metadata.version) {
+        Write-Host "Policy $($PolicyJson.displayName) is up to date."
+    }
+    else {
+        Write-Host "Updating Policy Definition $($PolicyJson.displayName)."
+        $Policy = Set-AzPolicyDefinition -Id $Policy.ResourceId -Policy $PolicyDefinitionPath -ErrorAction SilentlyContinue -WarningAction SilentlyContinue 
+    }
+}
+else {
+    Write-Host "Creating New Policy Definition $($PolicyJson.displayName)."
+    $Policy = New-AzPolicyDefinition -Name $PolicyJson.displayName -Policy $PolicyDefinitionPath -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+}
+
+$PolicyName = $PolicyJson.displayName.tolower() -replace '\s+', '-'
+$PolicyAssignment = Get-AzPolicyAssignment -Name $PolicyName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+if (-not $PolicyAssignment) {
+    Write-Host "Assigning the policy to block opening 3389 to the internet."
+    New-AzPolicyAssignment -Name $PolicyName -DisplayName $PolicyJson.displayName -PolicyDefinition $Policy -PolicyParameterObject @{port = '3389'} | Out-Null
+}
+else {
+    Write-Host "Policy already assigned."    
 }
 
 $TemplateSpecParams = @{
@@ -37,8 +69,6 @@ $TemplateSpecParams = @{
     Location          = $Location
     Force             = $true
 }
-
-### Policy?
 
 if (-not $ApplicationRGOnly) {
     Write-Host ""; Write-Host "Setting up the management resource group - $ManagementResourceGroupName"
@@ -100,8 +130,8 @@ if (-not $ManagementRGOnly) {
     $ParametersFile.parameters.dscBlobStorageUri.value = $DscArchiveStorageUri
     $ParametersFile.parameters.azureDevOpsToken.value = $AzureDevOpsToken
     $ParametersFile | 
-        ConvertTo-Json | 
-        out-file ./current.parameters.json -Force
+    ConvertTo-Json | 
+    out-file ./current.parameters.json -Force
 
     if (-not $ApplicationRGSpecId) {
         Write-Host ""; Write-Host "Getting the current application resource group templatespec Id"

@@ -1,0 +1,85 @@
+{
+    "displayName": "Network Security Rule with Port From Internet",
+    "policyType": "Custom",
+    "mode": "All",
+    "description": "This policy audits any network security rule that allows the specified port access from Internet",
+    "metadata": {
+        "version": "3.0.0",
+        "category": "Network"
+    },
+    "parameters": {
+        "effect": {
+            "type": "String",
+            "metadata": {
+                "displayName": "Effect",
+                "description": "Enable or disable the execution of the policy"
+            },
+            "allowedValues": [
+                "Audit",
+                "Deny",
+                "Disabled"
+            ],
+            "defaultValue": "Audit"
+        },
+        "port": {
+            "type": "String",
+            "metadata": {
+                "displayName": "Port",
+                "description": "Port to disallow"
+            }
+        }
+    },
+    "policyRule": {
+        "if": {
+            "allOf": [
+                {
+                    "field": "type",
+                    "equals": "Microsoft.Network/networkSecurityGroups/securityRules"
+                },
+                {
+                    "allOf": [
+                        {
+                            "anyOf": [
+                                {
+                                    "field": "Microsoft.Network/networkSecurityGroups/securityRules/sourceAddressPrefix",
+                                    "equals": "*"
+                                },
+                                {
+                                    "field": "Microsoft.Network/networkSecurityGroups/securityRules/sourceAddressPrefix",
+                                    "equals": "Internet"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "Microsoft.Network/networkSecurityGroups/securityRules/direction",
+                            "equals": "Inbound"
+                        },
+                        {
+                            "field": "Microsoft.Network/networkSecurityGroups/securityRules/access",
+                            "equals": "Allow"
+                        },
+                        {
+                            "anyOf": [
+                                {
+                                    "field": "Microsoft.Network/networkSecurityGroups/securityRules/destinationPortRange",
+                                    "equals": "*"
+                                },
+                                {
+                                    "allOf": [
+                                        {
+                                            "field": "Microsoft.Network/networkSecurityGroups/securityRules/destinationPortRange",
+                                            "equals": "[parameters('port')]"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "then": {
+            "effect": "[parameters('effect')]"
+        }
+    }
+}
