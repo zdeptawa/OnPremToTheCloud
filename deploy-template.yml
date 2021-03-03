@@ -1,9 +1,5 @@
 steps:
-- task: IISWebAppDeploymentOnMachineGroup@0
-  inputs:
-    WebSiteName: '$(websiteName)'
-    Package: '$(Pipeline.Workspace)\**\*.zip'
-    
+
 - task: SqlDacpacDeploymentOnMachineGroup@0
   inputs:
     TaskType: 'dacpac'
