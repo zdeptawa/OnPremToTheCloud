@@ -1,4 +1,8 @@
 steps:
+- task: IISWebAppDeploymentOnMachineGroup@0
+  inputs:
+    WebSiteName: '$(websiteName)'
+    Package: '$(Pipeline.Workspace)\**\mercury.zip'
 
 - task: SqlDacpacDeploymentOnMachineGroup@0
   inputs:
