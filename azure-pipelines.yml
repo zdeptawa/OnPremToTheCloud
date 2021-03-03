@@ -6,7 +6,7 @@
 trigger:
   branches:
     include:
-      - master
+      - episode_4
   paths:
     exclude:
       - .github
@@ -73,26 +73,16 @@ stages:
   - stage: DeployToTest
     dependsOn: Build
     variables:
-    - group: TestVariables
+      - name: websiteName
+        value: 'Mercury Health'
+      - name: databaseName
+        value: MercuryDB
     jobs:
       - deployment: DeployTestApplication
-        environment: MercuryWeb-Test.OnPremServer
+        environment: Development
         strategy:
           runOnce:
             deploy:
               steps:
               - template: deploy-template.yml
             
-                  
-  - stage: DeployToProd
-    dependsOn: DeployToTest
-    variables:
-    - group: ProductionVariables
-    jobs:
-      - deployment: DeployProdApplication
-        environment: MercuryWeb-Prod.OnPremServerProd
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: deploy-template.yml

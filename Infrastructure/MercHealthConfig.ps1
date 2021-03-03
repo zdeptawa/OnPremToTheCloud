@@ -1,5 +1,3 @@
-
-
 Configuration MercuryHealthBase {
     Node localhost {
         WindowsFeature FileAndStorage-Services {
@@ -272,23 +270,103 @@ Configuration MercuryHealthBase {
         WindowsFeature Web-Static-Content {
             Name   = 'Web-Static-Content'
             Ensure = 'Present'
-        }        
+        }       
+        
+        Registry SchUseStrongCrypto
+        {
+            Key                         = 'HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319'
+            ValueName                   = 'SchUseStrongCrypto'
+            ValueType                   = 'Dword'
+            ValueData                   =  '1'
+            Ensure                      = 'Present'
+        }
+
+        Registry SchUseStrongCrypto64
+        {
+            Key                         = 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NETFramework\v4.0.30319'
+            ValueName                   = 'SchUseStrongCrypto'
+            ValueType                   = 'Dword'
+            ValueData                   =  '1'
+            Ensure                      = 'Present'
+        }
+    }
+}
+
+Configuration MercuryHealthAgent {
+    param (
+        $AzureDevOpsToken,
+        $AzureDevOpsProject,
+        $AzureDevOpsUrl, 
+        $AzureDevOpsEnvironmentName,
+        $Uri = 'https://vstsagentpackage.azureedge.net/agent/2.182.1/vsts-agent-win-x64-2.182.1.zip'
+    )
+    Import-DscResource -ModuleName xPSDesiredStateConfiguration -ModuleVersion 9.1.0
+
+    node localhost {
+        File AzAgentDirectory {
+            DestinationPath = "$($env:SystemDrive)/azagent"
+            Type            = 'Directory'
+        }
+
+        File "A1" {
+            DestinationPath = "$($env:SystemDrive)/azagent/A1"
+            Type            = 'Directory'
+            DependsOn       = '[File]AzAgentDirectory'
+        }
+        
+        xRemoteFile DownloadAgent {
+            DestinationPath = "$($env:SystemDrive)/azagent/A1/agent.zip"
+            Uri             = $Uri
+            DependsOn       = '[File]A1'
+        }
+
+        Archive UnpackAgent {
+            Destination = "$($env:SystemDrive)/azagent/A1"
+            Path        = "$($env:SystemDrive)/azagent/A1/agent.zip"
+            DependsOn   = '[xRemoteFile]DownloadAgent'
+        }
+
+        Script RegisterAgent {
+            GetScript  = { return @{Result = "" } }
+            TestScript = { return $false }
+            SetScript  = {
+                cd "$($env:SystemDrive)/azagent/A1"
+                .\config.cmd --environment --environmentname "$using:AzureDevOpsEnvironmentName" --unattended --addvirtualmachineresourcetags --virtualmachineresourcetags mercuryweb --agent $env:COMPUTERNAME --runasservice --work '_work' --url $using:AzureDevOpsUrl --projectname $using:AzureDevOpsProject --auth PAT --token $using:AzureDevOpsToken; 
+            }
+            DependsOn  = '[Archive]UnpackAgent'
+        }
+
+        File RemoveAgentZip {
+            DestinationPath = "$($env:SystemDrive)/azagent/A1/agent.zip"
+            Ensure          = "Absent"
+            DependsOn       = '[Script]RegisterAgent'
+        }
     }
 }
 
 Configuration MercuryHealthWeb {
     param (
         [PSCredential] $AppPoolCredential,
-        [string] $ApplicationZipUri,
         [string] $AzureDevOpsToken
     )
+
     Import-DscResource -ModuleName xWebAdministration -ModuleVersion 3.2.0
+
     Node localhost {
         MercuryHealthBase BaseConfig {
         }
 
+        MercuryHealthAgent AgentInstall {
+            AzureDevOpsToken   = $AzureDevOpsToken
+            AzureDevOpsProject = 'OnPremToTheCloud'
+            AzureDevOpsUrl     = 'https://dev.azure.com/murawski-demo/'
+            AzureDevOpsEnvironmentName = 'Development'
+            DependsOn = "[MercuryHealthBase]BaseConfig"
+        }
+
         File WebsiteDirectory {
             DestinationPath = 'C:\MercuryHealth'
+            Type            = 'Directory'
         }
 
         xWebAppPool MercHealthPool {
@@ -317,7 +395,7 @@ Configuration MercuryHealthWeb {
             ServerAutoStart = $true
             ApplicationPool = 'MercuryHealth'
             PhysicalPath    = 'C:\MercuryHealth'
-            DependsOn       = "[xWebsite]RemoveDefaultWebsite", "[xWebAppPool]MercHealthPool", "[Archive]UnpackWebSite"
+            DependsOn       = "[xWebsite]RemoveDefaultWebsite", "[xWebAppPool]MercHealthPool", "[MercuryHealthAgent]AgentInstall"
         }
     }
 }

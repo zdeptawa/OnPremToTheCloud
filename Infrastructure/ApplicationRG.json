@@ -1,6 +1,6 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
+    "contentVersion": "2.0.0.0",
     "parameters": {
         "location": {
             "type": "string",
@@ -69,13 +69,15 @@
                     {
                         "name": "HttpRule",
                         "properties": {
-                            "description": "Allow Http Traffics",
+                            "description": "Allow Http Traffic",
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "80",
                             "access": "Allow",
                             "priority": 100,
-                            "direction": "Inbound"
+                            "direction": "Inbound",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*"
                         }
                     }
                 ]
@@ -230,7 +232,6 @@
                             "userName": "abel",
                             "password": "[variables('password')]"
                         },
-                        "ApplicationZipUri": "[concat(parameters('dscBlobStorageUri'), variables('configurationZipName'))]",
                         "AzureDevOpsToken": "[parameters('azureDevOpsToken')]"
                     }
                 }

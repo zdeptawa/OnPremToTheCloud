@@ -4,7 +4,8 @@ param (
     $StorageAccountName = 'optcdsc',
     $StorageContainerName = 'configurations',
     $Location = 'eastus',
-    $AzureDevOpsToken = 'REPLACEMENT',
+    [ValidateNotNullOrEmpty()]
+    $AzureDevOpsToken = $env:AzureDevOpsEnvironmentPat,
     [switch]$FreshStart,
     [switch]$ManagementRGOnly,
     [switch]$ApplicationRGOnly
@@ -32,7 +33,6 @@ if ($FreshStart) {
 }
 
 $TemplateSpecParams = @{
-    Version           = '1.0.2'
     ResourceGroupName = $ManagementResourceGroupName
     Location          = $Location
     Force             = $true
@@ -45,12 +45,14 @@ if (-not $ApplicationRGOnly) {
     New-AzResourceGroup -Name $ManagementResourceGroupName -Location $Location -Force | Out-Null
 
     Write-Host ""; Write-Host "Deploying template specs to the management resource group."
-    $ManagementRGSpec = New-AzTemplateSpec @TemplateSpecParams -Name ManagementRG -TemplateFile './ManagementRG.json'
+    $ManagementRGTemplateVersion = (Get-Content './ManagementRG.json' -raw | ConvertFrom-Json).ContentVersion
+    $ManagementRGSpec = New-AzTemplateSpec @TemplateSpecParams -Name ManagementRG -TemplateFile './ManagementRG.json' -Version $ManagementRGTemplateVersion
     $ManagementRGSpecId = $ManagementRGSpec.Versions |
     Sort-Object -Property Name -Descending |
     Select-Object -First 1 -ExpandProperty Id
 
-    $ApplicationRGSpec = New-AzTemplateSpec @TemplateSpecParams -Name ApplicationRG -TemplateFile './ApplicationRG.json'
+    $ApplicationRGTemplateVersion = (Get-Content './ApplicationRG.json' -raw | ConvertFrom-Json).ContentVersion
+    $ApplicationRGSpec = New-AzTemplateSpec @TemplateSpecParams -Name ApplicationRG -TemplateFile './ApplicationRG.json' -Version $ApplicationRGTemplateVersion
     $ApplicationRGSpecId = $ApplicationRGSpec.Versions |
     Sort-Object -Property Name -Descending |
     Select-Object -First 1 -ExpandProperty Id
@@ -65,13 +67,16 @@ if (-not $ApplicationRGOnly) {
         Force             = $true
     }
 
-    New-AzResourceGroupDeployment @ManagementRGDeploymentParameters
+    New-AzResourceGroupDeployment @ManagementRGDeploymentParameters | Out-Null
 
     Write-Host ""; Write-Host 'Getting the xWebAdministration module to package as part of the published DSC configuration.'
     if (-not (Get-Module -ListAvailable xWebAdministration)) {
         Install-Module xWebAdministration -RequiredVersion 3.2.0 -Scope CurrentUser
     }
-
+    Write-Host ""; Write-Host 'Getting the xPSDesiredStateConfiguration module to package as part of the published DSC configuration.'
+    if (-not (Get-Module -ListAvailable xPSDesiredStateConfiguration)) {
+        Install-Module xPSDesiredStateConfiguration -RequiredVersion 9.1.0 -Scope CurrentUser
+    }
     Write-Host ""; Write-Host 'Packaging and publishing the DSC configuration and supporting modules.'
     $Parameters = @{
         ResourceGroupName  = $ManagementResourceGroupName
@@ -85,13 +90,14 @@ if (-not $ApplicationRGOnly) {
 if (-not $ManagementRGOnly) {
     
     Write-Host ""; Write-Host "Creating the application resource group."
-    New-AzResourceGroup -Name $ResourceGroupName -Location $Location -Force
+    New-AzResourceGroup -Name $ResourceGroupName -Location $Location -Force | Out-Null
 
     $StorageAccount = Get-AzStorageAccount -ResourceGroupName $ManagementResourceGroupName -Name $StorageAccountName
-    $DscBlogStorageUri = $StorageAccount.PrimaryEndpoints.Blob + $StorageContainerName + '/'
-    Write-Host ""; Write-Host "Creating a current parameters file with $DscBlogStorageUri."
+    $DscArchiveStorageUri = $StorageAccount.PrimaryEndpoints.Blob + $StorageContainerName + '/'
+    Write-Host ""; Write-Host "Creating a current parameters file with Storage URI - $DscArchiveStorageUri."
+    Write-Host ""; Write-Host "Creating a current parameters file with Token - $AzureDevOpsToken."
     $ParametersFile = get-content './ApplicationRG.parameters.json' -raw | ConvertFrom-Json
-    $ParametersFile.parameters.dscBlobStorageUri.value = $DscBlogStorageUri
+    $ParametersFile.parameters.dscBlobStorageUri.value = $DscArchiveStorageUri
     $ParametersFile.parameters.azureDevOpsToken.value = $AzureDevOpsToken
     $ParametersFile | 
         ConvertTo-Json | 
