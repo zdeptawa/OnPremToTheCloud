@@ -1,6 +1,6 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "3.0.0.0",
+    "contentVersion": "4.0.0.0",
     "parameters": {
         "location": {
             "type": "string",
@@ -189,7 +189,7 @@
                     "vmSize": "Standard_D4s_v3"
                 },
                 "osProfile": {
-                    "computerName": "[parameters('vmname')]",
+                    "computerName": "[take(parameters('vmname'), 15)]",
                     "adminUsername": "[parameters('username')]",
                     "adminPassword": "[parameters('password')]"
                 },

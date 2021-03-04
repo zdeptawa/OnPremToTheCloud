@@ -65,7 +65,7 @@ stages:
       - name: websiteName
         value: 'Mercury Health'
       - name: databaseName
-        value: MercuryDB
+        value: MercuryHealthDB
     jobs:
       - deployment: DeployTestApplication
         environment: 

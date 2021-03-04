@@ -5,7 +5,7 @@ param (
     $StorageContainerName = 'configurations',
     $Location = 'eastus',
     $AzureDevOpsToken = $env:AzureDevOpsEnvironmentPat,
-    $VMName = 'MercuryHealthDev'
+    $VMName = 'MercuryHealthDev',
     [switch]$FreshStart,
     [switch]$ManagementRGOnly,
     [switch]$ApplicationRGOnly
@@ -14,6 +14,8 @@ param (
 # If you change this, then you have to update the ARM template
 
 if ([string]::IsNullOrEmpty($AzureDevOpsToken)) {
+    Write-Warning "This provisioning process needs a Personal Access Token capable of adding a VM to an environment in your Azure DevOps project."
+    Write-Warning "Please ensure that the token has the right permissions."
     throw "Please provide -AzureDevOpsToken or set `$env:AzureDevOpsEnvironmentPat."
 }
 
@@ -22,21 +24,25 @@ $PolicyDefinitionPath = './network-security-rule-with-port.json'
 $PolicyJson = Get-Content $PolicyDefinitionPath -Raw | ConvertFrom-Json  
 
 if ($FreshStart) {
+    $Jobs = @()
     if (-not $ManagementRGOnly) {
         Write-Host ""; Write-Host "Removing $ResourceGroupName"
-        Get-AzResourceGroup -Name $ResourceGroupName -ErrorAction SilentlyContinue |
-        Remove-AzResourceGroup -Force | 
-        Out-Null
+        $Jobs += Get-AzResourceGroup -Name $ResourceGroupName -ErrorAction SilentlyContinue |
+        Remove-AzResourceGroup -Force -AsJob
     }
     if (-not $ApplicationRGOnly) {
         Write-Host ""; Write-Host "Removing $ManagementResourceGroupName"
-        Get-AzResourceGroup -Name $ManagementResourceGroupName -ErrorAction SilentlyContinue |
-        Remove-AzResourceGroup -Force | 
-        Out-Null
-    }
+        $Jobs += Get-AzResourceGroup -Name $ManagementResourceGroupName -ErrorAction SilentlyContinue |
+        Remove-AzResourceGroup -Force -AsJob
+    }    
     Write-Host ""; Write-Host "Removing parameters files."
     Remove-Item './ApplicationRG.current.parameters.json' -Force -ErrorAction SilentlyContinue | Out-Null
     Remove-Item './ManagementRG.current.parameters.json' -Force -ErrorAction SilentlyContinue | Out-Null
+
+    Write-Host "Waiting for the resource groups to delete."
+    $Jobs | Receive-Job -Wait | Out-Null
+    Write-Host "Resource groups have been deleted."
+
 }
 
 Write-Host "Checking Azure Policy status"
@@ -46,7 +52,7 @@ if ($Policy) {
         Write-Host "Policy $($PolicyJson.displayName) is up to date."
     }
     else {
-        Write-Host "Updating Policy Definition $($PolicyJson.displayName)."
+        Write-Host ""; Write-Host "Updating Policy Definition $($PolicyJson.displayName)."
         $Policy = Set-AzPolicyDefinition -Id $Policy.ResourceId -Policy $PolicyDefinitionPath -ErrorAction SilentlyContinue -WarningAction SilentlyContinue 
     }
 }
@@ -58,11 +64,11 @@ else {
 $PolicyName = $PolicyJson.displayName.tolower() -replace '\s+', '-'
 $PolicyAssignment = Get-AzPolicyAssignment -Name $PolicyName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
 if (-not $PolicyAssignment) {
-    Write-Host "Assigning the policy to block opening 3389 to the internet."
+    Write-Host ""; Write-Host "Assigning the policy to block opening 3389 to the internet."
     New-AzPolicyAssignment -Name $PolicyName -DisplayName $PolicyJson.displayName -PolicyDefinition $Policy -PolicyParameterObject @{port = '3389' } | Out-Null
 }
 else {
-    Write-Host "Policy already assigned."    
+    Write-Host ""; Write-Host "Policy already assigned."    
 }
 
 $TemplateSpecParams = @{
@@ -136,15 +142,13 @@ if (-not $ManagementRGOnly) {
 
     $StorageAccount = Get-AzStorageAccount -ResourceGroupName $ManagementResourceGroupName -Name $StorageAccountName
     $DscArchiveStorageUri = $StorageAccount.PrimaryEndpoints.Blob + $StorageContainerName + '/'
-    Write-Host ""; Write-Host "Creating a current parameters file with Storage URI - $DscArchiveStorageUri."
-    Write-Host ""; Write-Host "Creating a current parameters file with Token - $AzureDevOpsToken."
     $ParametersFile = get-content './ApplicationRG.parameters.json' -raw | ConvertFrom-Json
     $ParametersFile.parameters.dscBlobStorageUri.value = $DscArchiveStorageUri
     $ParametersFile.parameters.azureDevOpsToken.value = $AzureDevOpsToken
     $ParametersFile.parameters.vmname.value = $VMName
     $ParametersFile | 
     ConvertTo-Json | 
-    out-file ./ApplicationRG.current.parameters.json -Force
+    out-file './ApplicationRG.current.parameters.json' -Force
 
     if (-not $ApplicationRGSpecId) {
         Write-Host ""; Write-Host "Getting the current application resource group templatespec Id"
