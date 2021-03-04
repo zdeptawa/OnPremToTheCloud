@@ -20,7 +20,6 @@ $ConfigurationPath = 'MercHealthConfig.ps1'
 $PolicyDefinitionPath = './network-security-rule-with-port.json'
 $PolicyJson = Get-Content $PolicyDefinitionPath -Raw | ConvertFrom-Json  
 
-
 if ($FreshStart) {
     if (-not $ManagementRGOnly) {
         Write-Host ""; Write-Host "Removing $ResourceGroupName"
@@ -58,7 +57,7 @@ $PolicyName = $PolicyJson.displayName.tolower() -replace '\s+', '-'
 $PolicyAssignment = Get-AzPolicyAssignment -Name $PolicyName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
 if (-not $PolicyAssignment) {
     Write-Host "Assigning the policy to block opening 3389 to the internet."
-    New-AzPolicyAssignment -Name $PolicyName -DisplayName $PolicyJson.displayName -PolicyDefinition $Policy -PolicyParameterObject @{port = '3389'} | Out-Null
+    New-AzPolicyAssignment -Name $PolicyName -DisplayName $PolicyJson.displayName -PolicyDefinition $Policy -PolicyParameterObject @{port = '3389' } | Out-Null
 }
 else {
     Write-Host "Policy already assigned."    
@@ -98,25 +97,26 @@ if (-not $ApplicationRGOnly) {
     }
 
     New-AzResourceGroupDeployment @ManagementRGDeploymentParameters | Out-Null
-
-    Write-Host ""; Write-Host 'Getting the xWebAdministration module to package as part of the published DSC configuration.'
-    if (-not (Get-Module -ListAvailable xWebAdministration)) {
-        Install-Module xWebAdministration -RequiredVersion 3.2.0 -Scope CurrentUser
-    }
-    Write-Host ""; Write-Host 'Getting the xPSDesiredStateConfiguration module to package as part of the published DSC configuration.'
-    if (-not (Get-Module -ListAvailable xPSDesiredStateConfiguration)) {
-        Install-Module xPSDesiredStateConfiguration -RequiredVersion 9.1.0 -Scope CurrentUser
-    }
-    Write-Host ""; Write-Host 'Packaging and publishing the DSC configuration and supporting modules.'
-    $Parameters = @{
-        ResourceGroupName  = $ManagementResourceGroupName
-        ConfigurationPath  = $ConfigurationPath
-        StorageAccountName = $StorageAccountName
-        ContainerName      = $StorageContainerName
-        Force              = $true
-    }
-    Publish-AzVMDscConfiguration @Parameters | Out-Null
 }
+
+Write-Host ""; Write-Host 'Getting the xWebAdministration module to package as part of the published DSC configuration.'
+if (-not (Get-Module -ListAvailable xWebAdministration)) {
+    Install-Module xWebAdministration -RequiredVersion 3.2.0 -Scope CurrentUser
+}
+Write-Host ""; Write-Host 'Getting the xPSDesiredStateConfiguration module to package as part of the published DSC configuration.'
+if (-not (Get-Module -ListAvailable xPSDesiredStateConfiguration)) {
+    Install-Module xPSDesiredStateConfiguration -RequiredVersion 9.1.0 -Scope CurrentUser
+}
+Write-Host ""; Write-Host 'Packaging and publishing the DSC configuration and supporting modules.'
+$Parameters = @{
+    ResourceGroupName  = $ManagementResourceGroupName
+    ConfigurationPath  = $ConfigurationPath
+    StorageAccountName = $StorageAccountName
+    ContainerName      = $StorageContainerName
+    Force              = $true
+}
+Publish-AzVMDscConfiguration @Parameters | Out-Null
+
 if (-not $ManagementRGOnly) {
     
     Write-Host ""; Write-Host "Creating the application resource group."
@@ -153,3 +153,7 @@ if (-not $ManagementRGOnly) {
     New-AzResourceGroupDeployment @FullDeploymentParameters
     Remove-Item -Path ./current.parameters.json -Force
 }
+
+$DSCStatus = Get-AzVMDscExtensionStatus -ResourceGroupName $ResourceGroupName -VMName mercuryhealthvm
+$DSCStatus.StatusMessage
+$DSCStatus.DscConfigurationLog

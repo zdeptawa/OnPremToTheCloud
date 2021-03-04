@@ -347,7 +347,7 @@ Configuration MercuryHealthAgent {
                 cd (join-path $using:AzAgentDirectory 'A1')
                 .\config.cmd remove --unattended --token $using:AzureDevOpsToken
                 $Username = $using:AgentCredential.UserName
-                $Password = $using:AgentCredential.GetNetworkCredential().Password
+                $Password = ($using:AgentCredential).GetNetworkCredential().Password
                 .\config.cmd --environment --environmentname "$using:AzureDevOpsEnvironmentName" --unattended --addvirtualmachineresourcetags --virtualmachineresourcetags mercuryweb --agent $env:COMPUTERNAME --runasservice --work '_work' --url $using:AzureDevOpsUrl --projectname $using:AzureDevOpsProject --auth PAT --token $using:AzureDevOpsToken --windowslogonaccount "$UserName" --windowslogonpassword "$Password"; 
             }
             DependsOn  = '[Archive]UnpackAgentA1'
