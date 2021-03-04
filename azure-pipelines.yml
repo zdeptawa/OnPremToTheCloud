@@ -68,7 +68,10 @@ stages:
         value: MercuryDB
     jobs:
       - deployment: DeployTestApplication
-        environment: Development
+        environment: 
+          name: Development
+          resourceType: VirtualMachine
+          tags: mercuryweb
         strategy:
           runOnce:
             deploy:
