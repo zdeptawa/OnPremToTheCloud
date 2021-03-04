@@ -272,22 +272,20 @@ Configuration MercuryHealthBase {
             Ensure = 'Present'
         }       
         
-        Registry SchUseStrongCrypto
-        {
-            Key                         = 'HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319'
-            ValueName                   = 'SchUseStrongCrypto'
-            ValueType                   = 'Dword'
-            ValueData                   =  '1'
-            Ensure                      = 'Present'
+        Registry SchUseStrongCrypto {
+            Key       = 'HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319'
+            ValueName = 'SchUseStrongCrypto'
+            ValueType = 'Dword'
+            ValueData = '1'
+            Ensure    = 'Present'
         }
 
-        Registry SchUseStrongCrypto64
-        {
-            Key                         = 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NETFramework\v4.0.30319'
-            ValueName                   = 'SchUseStrongCrypto'
-            ValueType                   = 'Dword'
-            ValueData                   =  '1'
-            Ensure                      = 'Present'
+        Registry SchUseStrongCrypto64 {
+            Key       = 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NETFramework\v4.0.30319'
+            ValueName = 'SchUseStrongCrypto'
+            ValueType = 'Dword'
+            ValueData = '1'
+            Ensure    = 'Present'
         }
     }
 }
@@ -301,7 +299,8 @@ Configuration MercuryHealthAgent {
         [string] $AzureDevOpsEnvironmentName,
         [pscredential] $AgentCredential,
         [string] $AgentUri = 'https://vstsagentpackage.azureedge.net/agent/2.182.1/vsts-agent-win-x64-2.182.1.zip',
-        [string] $MsDeployUri = 'https://download.microsoft.com/download/0/1/D/01DC28EA-638C-4A22-A57B-4CEF97755C6C/WebDeploy_amd64_en-US.msi'
+        [string] $MsDeployUri = 'https://download.microsoft.com/download/0/1/D/01DC28EA-638C-4A22-A57B-4CEF97755C6C/WebDeploy_amd64_en-US.msi',
+        [string] $SqlPackageUri = 'https://download.microsoft.com/download/d/8/7/d8754384-bcd6-4000-9c22-5a0fb97ed3cf/x64/DacFramework.msi'
     )
     Import-DscResource -ModuleName xPSDesiredStateConfiguration -ModuleVersion 9.1.0
 
@@ -361,9 +360,21 @@ Configuration MercuryHealthAgent {
         }
 
         xMsiPackage InstallMSDeploy {
-            Path = (Join-Path $AzAgentDirectory 'WebDeploy_amd64_en-US.msi')
+            Path      = (Join-Path $AzAgentDirectory 'WebDeploy_amd64_en-US.msi')
             ProductId = '6773A61D-755B-4F74-95CC-97920E45E696'
             DependsOn = '[xRemoteFile]DownloadMsDeploy'
+        }
+
+        xRemoteFile DownloadSqlPackage {
+            DestinationPath = (Join-Path $AzAgentDirectory 'DacFramework.msi')
+            Uri             = $SqlPackageUri
+            DependsOn       = '[File]AzAgentDirectory'
+        }
+
+        xMsiPackage InstallSqlPackage {
+            Path      = (Join-Path $AzAgentDirectory 'DacFramework.msi')
+            ProductId = '0C601E12-D3AE-4E28-8DDC-0F285E7F60B0'   
+            DependsOn = '[xRemoteFile]DownloadSqlPackage'
         }
 
     }
@@ -386,12 +397,12 @@ Configuration MercuryHealthWeb {
         }
 
         MercuryHealthAgent AgentInstall {
-            AzureDevOpsToken   = $AzureDevOpsToken
-            AzureDevOpsProject = $AzureDevOpsProject
-            AzureDevOpsUrl     = $AzureDevOpsUrl
+            AzureDevOpsToken           = $AzureDevOpsToken
+            AzureDevOpsProject         = $AzureDevOpsProject
+            AzureDevOpsUrl             = $AzureDevOpsUrl
             AzureDevOpsEnvironmentName = $AzureDevOpsEnvironmentName
-            AgentCredential = $AppPoolCredential
-            DependsOn = "[MercuryHealthBase]BaseConfig"
+            AgentCredential            = $AppPoolCredential
+            DependsOn                  = "[MercuryHealthBase]BaseConfig"
         }
 
         File WebsiteDirectory {
