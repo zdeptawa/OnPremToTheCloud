@@ -294,58 +294,74 @@ Configuration MercuryHealthBase {
 
 Configuration MercuryHealthAgent {
     param (
-        $AzureDevOpsToken,
-        $AzureDevOpsProject,
-        $AzureDevOpsUrl, 
-        $AzureDevOpsEnvironmentName,
-        $AgentUri = 'https://vstsagentpackage.azureedge.net/agent/2.182.1/vsts-agent-win-x64-2.182.1.zip',
-        $MsDeployUri = 'https://download.microsoft.com/download/0/1/D/01DC28EA-638C-4A22-A57B-4CEF97755C6C/WebDeploy_amd64_en-US.msi'
+        [string] $AzAgentDirectory = 'C:\azagent',
+        [string] $AzureDevOpsToken,
+        [string] $AzureDevOpsProject,
+        [string] $AzureDevOpsUrl, 
+        [string] $AzureDevOpsEnvironmentName,
+        [pscredential] $AgentCredential,
+        [string] $AgentUri = 'https://vstsagentpackage.azureedge.net/agent/2.182.1/vsts-agent-win-x64-2.182.1.zip',
+        [string] $MsDeployUri = 'https://download.microsoft.com/download/0/1/D/01DC28EA-638C-4A22-A57B-4CEF97755C6C/WebDeploy_amd64_en-US.msi'
     )
     Import-DscResource -ModuleName xPSDesiredStateConfiguration -ModuleVersion 9.1.0
 
     node localhost {
         File AzAgentDirectory {
-            DestinationPath = "D:\azagent"
+            DestinationPath = $AzAgentDirectory
             Type            = 'Directory'
         }
 
         File "A1" {
-            DestinationPath = "D:\azagent\A1"
+            DestinationPath = (Join-Path $AzAgentDirectory 'A1')
             Type            = 'Directory'
             DependsOn       = '[File]AzAgentDirectory'
         }
         
-        xRemoteFile DownloadAgent {
-            DestinationPath = "D:\azagent\A1\agent.zip"
-            Uri             = $AgentUri
-            DependsOn       = '[File]A1'
+        File "A2" {
+            DestinationPath = (Join-Path $AzAgentDirectory 'A2')
+            Type            = 'Directory'
+            DependsOn       = '[File]AzAgentDirectory'
         }
 
-        Archive UnpackAgent {
-            Destination = "D:\azagent\A1"
-            Path        = "D:\azagent\A1\agent.zip"
-            DependsOn   = '[xRemoteFile]DownloadAgent'
+        xRemoteFile DownloadAgent {
+            DestinationPath = (join-path $AzAgentDirectory 'agent.zip')
+            Uri             = $AgentUri
+            DependsOn       = '[File]AzAgentDirectory'
+        }
+
+        Archive UnpackAgentA1 {
+            Destination = (Join-Path $AzAgentDirectory 'A1')
+            Path        = (join-path $AzAgentDirectory 'agent.zip')
+            DependsOn   = '[xRemoteFile]DownloadAgent', '[File]A1'
+        }
+
+        Archive UnpackAgentA2 {
+            Destination = (Join-Path $AzAgentDirectory 'A2')
+            Path        = (join-path $AzAgentDirectory 'agent.zip')
+            DependsOn   = '[xRemoteFile]DownloadAgent', '[File]A2'
         }
 
         Script RegisterAgent {
             GetScript  = { return @{Result = "" } }
             TestScript = { return $false }
             SetScript  = {
-                cd "D:\azagent\A1"
+                cd (join-path $using:AzAgentDirectory 'A1')
                 .\config.cmd remove --unattended --token $using:AzureDevOpsToken
-                .\config.cmd --environment --environmentname "$using:AzureDevOpsEnvironmentName" --unattended --addvirtualmachineresourcetags --virtualmachineresourcetags mercuryweb --agent $env:COMPUTERNAME --runasservice --work '_work' --url $using:AzureDevOpsUrl --projectname $using:AzureDevOpsProject --auth PAT --token $using:AzureDevOpsToken; 
+                $Username = $using:AgentCredential.UserName
+                $Password = $using:AgentCredential.GetNetworkCredential().Password
+                .\config.cmd --environment --environmentname "$using:AzureDevOpsEnvironmentName" --unattended --addvirtualmachineresourcetags --virtualmachineresourcetags mercuryweb --agent $env:COMPUTERNAME --runasservice --work '_work' --url $using:AzureDevOpsUrl --projectname $using:AzureDevOpsProject --auth PAT --token $using:AzureDevOpsToken --windowslogonaccount "$UserName" --windowslogonpassword "$Password"; 
             }
-            DependsOn  = '[Archive]UnpackAgent'
+            DependsOn  = '[Archive]UnpackAgentA1'
         }
 
         xRemoteFile DownloadMsDeploy {
-            DestinationPath = "D:\azagent\A1\WebDeploy_amd64_en-US.msi"
+            DestinationPath = (Join-Path $AzAgentDirectory 'WebDeploy_amd64_en-US.msi')
             Uri             = $MsDeployUri
-            DependsOn       = '[File]A1'
+            DependsOn       = '[File]AzAgentDirectory'
         }
 
         xMsiPackage InstallMSDeploy {
-            Path = "D:\azagent\A1\WebDeploy_amd64_en-US.msi"
+            Path = (Join-Path $AzAgentDirectory 'WebDeploy_amd64_en-US.msi')
             ProductId = '6773A61D-755B-4F74-95CC-97920E45E696'
             DependsOn = '[xRemoteFile]DownloadMsDeploy'
         }
@@ -355,6 +371,9 @@ Configuration MercuryHealthAgent {
 
 Configuration MercuryHealthWeb {
     param (
+        [string] $AzureDevOpsProject = 'OnPremToTheCloud',
+        [string] $AzureDevOpsUrl = 'https://dev.azure.com/murawski-demo/',
+        [string] $AzureDevOpsEnvironmentName = 'Development',
         [PSCredential] $AppPoolCredential,
         [string] $AzureDevOpsToken
     )
@@ -368,9 +387,10 @@ Configuration MercuryHealthWeb {
 
         MercuryHealthAgent AgentInstall {
             AzureDevOpsToken   = $AzureDevOpsToken
-            AzureDevOpsProject = 'OnPremToTheCloud'
-            AzureDevOpsUrl     = 'https://dev.azure.com/murawski-demo/'
-            AzureDevOpsEnvironmentName = 'Development'
+            AzureDevOpsProject = $AzureDevOpsProject
+            AzureDevOpsUrl     = $AzureDevOpsUrl
+            AzureDevOpsEnvironmentName = $AzureDevOpsEnvironmentName
+            AgentCredential = $AppPoolCredential
             DependsOn = "[MercuryHealthBase]BaseConfig"
         }
 
