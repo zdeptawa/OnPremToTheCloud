@@ -5,6 +5,7 @@ param (
     $StorageContainerName = 'configurations',
     $Location = 'eastus',
     $AzureDevOpsToken = $env:AzureDevOpsEnvironmentPat,
+    $VMName = 'MercuryHealthDev'
     [switch]$FreshStart,
     [switch]$ManagementRGOnly,
     [switch]$ApplicationRGOnly
@@ -87,7 +88,7 @@ if (-not $ApplicationRGOnly) {
     Sort-Object -Property Name -Descending |
     Select-Object -First 1 -ExpandProperty Id
 
-    $MGParametersFile = get-content './ApplicationRG.parameters.json' -raw | ConvertFrom-Json
+    $MGParametersFile = get-content './ManagementRG.parameters.json' -raw | ConvertFrom-Json
     $MGParametersFile.parameters.storageAccountName.value = $StorageAccountName
     $MGParametersFile.parameters.storageContainerName.value = $StorageContainerName
     $MGParametersFile | 
@@ -140,6 +141,7 @@ if (-not $ManagementRGOnly) {
     $ParametersFile = get-content './ApplicationRG.parameters.json' -raw | ConvertFrom-Json
     $ParametersFile.parameters.dscBlobStorageUri.value = $DscArchiveStorageUri
     $ParametersFile.parameters.azureDevOpsToken.value = $AzureDevOpsToken
+    $ParametersFile.parameters.vmname.value = $VMName
     $ParametersFile | 
     ConvertTo-Json | 
     out-file ./ApplicationRG.current.parameters.json -Force
@@ -165,6 +167,6 @@ if (-not $ManagementRGOnly) {
     Remove-Item -Path ./ApplicationRG.current.parameters.json -Force
 }
 
-$DSCStatus = Get-AzVMDscExtensionStatus -ResourceGroupName $ResourceGroupName -VMName mercuryhealthvm
+$DSCStatus = Get-AzVMDscExtensionStatus -ResourceGroupName $ResourceGroupName -VMName $VMName
 $DSCStatus.StatusMessage
 $DSCStatus.DscConfigurationLog
