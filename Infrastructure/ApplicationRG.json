@@ -20,13 +20,46 @@
             "metadata": {
                 "description": "Azure DevOps Token for registering the vm to the deployment environment."
             }
+        },
+        "vmname": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the virtual machine."
+            }
+        },
+        "username": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for the admin user of the VM"
+            }
+        },
+        "password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the admin user of the VM."
+            }
+        },
+        "azureDevOpsProject": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure DevOps Project Name"
+            }
+        },
+        "azureDevOpsUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure DevOps Organization URL"
+            }
+        },
+        "azureDevOpsEnvironmentName": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure DevOps Deployment Environment"
+            }
         }
     },
     "functions": [],
     "variables": {
-        "vmname": "mercuryhealthvm",
-        "username": "abel",
-        "password": "P@ssw0rd!414",
         "configurationZipName": "MercHealthConfig.ps1.zip"
     },
     "resources": [
@@ -145,7 +178,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2019-07-01",
-            "name": "[variables('vmname')]",
+            "name": "[parameters('vmname')]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', 'vmNic')]",
@@ -156,9 +189,9 @@
                     "vmSize": "Standard_D4s_v3"
                 },
                 "osProfile": {
-                    "computerName": "mercury",
-                    "adminUsername": "[variables('username')]",
-                    "adminPassword": "[variables('password')]"
+                    "computerName": "[parameters('vmname')]",
+                    "adminUsername": "[parameters('username')]",
+                    "adminPassword": "[parameters('password')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -191,13 +224,13 @@
         {
             "type": "Microsoft.SqlVirtualMachine/sqlVirtualMachines",
             "apiVersion": "2017-03-01-preview",
-            "name": "[variables('vmname')]",
+            "name": "[parameters('vmname')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmname'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmname'))]"
             ],
             "properties": {
-                "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('vmname'))]",
+                "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmname'))]",
                 "sqlImageOffer": "SQL2017-WS2016",
                 "sqlServerLicenseType": "PAYG",
                 "sqlManagement": "Full",
@@ -207,11 +240,11 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(variables('vmname'), '/Microsoft.Powershell.DSC')]",
+            "name": "[concat(parameters('vmname'), '/Microsoft.Powershell.DSC')]",
             "apiVersion": "2018-06-01",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines',variables('vmname'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines',parameters('vmname'))]"
             ],
             "properties": {
                 "publisher": "Microsoft.Powershell",
@@ -230,9 +263,12 @@
                     "configurationArguments": {
                         "AppPoolCredential": {
                             "userName": "abel",
-                            "password": "[variables('password')]"
+                            "password": "[parameters('password')]"
                         },
-                        "AzureDevOpsToken": "[parameters('azureDevOpsToken')]"
+                        "AzureDevOpsToken": "[parameters('azureDevOpsToken')]",
+                        "AzureDevOpsUrl": "[parameters('azureDevOpsUrl')]",
+                        "AzureDevOpsProject": "[parameters('azureDevOpsProject')]",
+                        "AzureDevOpsEnvironmentName": "[parameters('azureDevOpsEnvironmentName')]"
                     }
                 }
             }

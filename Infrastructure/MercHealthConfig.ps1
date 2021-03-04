@@ -382,9 +382,9 @@ Configuration MercuryHealthAgent {
 
 Configuration MercuryHealthWeb {
     param (
-        [string] $AzureDevOpsProject = 'OnPremToTheCloud',
-        [string] $AzureDevOpsUrl = 'https://dev.azure.com/murawski-demo/',
-        [string] $AzureDevOpsEnvironmentName = 'Development',
+        [string] $AzureDevOpsProject,
+        [string] $AzureDevOpsUrl,
+        [string] $AzureDevOpsEnvironmentName,
         [PSCredential] $AppPoolCredential,
         [string] $AzureDevOpsToken
     )

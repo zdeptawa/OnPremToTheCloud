@@ -8,6 +8,18 @@
             "metadata": {
                 "description": "Location to deploy resources."
             }
+        },
+        "storageAccountName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of storage account for dsc configurations"
+            }
+        },
+        "storageContainerName": {
+            "type": "string",
+            "metadata": {
+                "description": "name of blob storage container for configurations"
+            }
         }
     },
     "functions": [],
@@ -15,11 +27,11 @@
     "resources": [
 
                 {
-            "name": "optcdsc",
+            "name": "[parameters('storageAccountName')]",
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-06-01",
             "tags": {
-                "displayName": "optcdsc"
+                "displayName": "[parameters('storageAccountName')]"
             },
             "location": "[parameters('location')]",
             "kind": "StorageV2",
@@ -33,17 +45,17 @@
         {
             "type": "Microsoft.Storage/storageAccounts/blobServices",
             "apiVersion": "2019-06-01",
-            "name": "optcdsc/default",
+            "name": "[concat(parameters('storageAccountName'), '/default')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts','optcdsc')]"
+                "[resourceId('Microsoft.Storage/storageAccounts',parameters('storageAccountName'))]"
             ]
         },
         {
             "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
             "apiVersion": "2019-06-01",
-            "name": "optcdsc/default/configurations",
+            "name": "[concat(parameters('storageAccountName'), '/default/', parameters('storageContainerName'))]",
             "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', 'optcdsc', 'default')]"
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccountName'), 'default')]"
             ],
             "properties": {
                 "publicAccess": "Blob"
@@ -53,7 +65,7 @@
     "outputs": {
         "configuration_storage": {
             "type": "string",
-            "value": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts','optcdsc')).primaryEndpoints.blob, 'configurations')]"
+            "value": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts',parameters('storageAccountName'))).primaryEndpoints.blob, parameters('storageContainerName'))]"
         }
     }
 }

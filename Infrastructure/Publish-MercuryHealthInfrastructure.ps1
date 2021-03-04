@@ -33,8 +33,9 @@ if ($FreshStart) {
         Remove-AzResourceGroup -Force | 
         Out-Null
     }
-    Write-Host ""; Write-Host "Removing parameters file."
-    Remove-Item './current.parameters.json' -Force -ErrorAction SilentlyContinue | Out-Null
+    Write-Host ""; Write-Host "Removing parameters files."
+    Remove-Item './ApplicationRG.current.parameters.json' -Force -ErrorAction SilentlyContinue | Out-Null
+    Remove-Item './ManagementRG.current.parameters.json' -Force -ErrorAction SilentlyContinue | Out-Null
 }
 
 Write-Host "Checking Azure Policy status"
@@ -86,17 +87,27 @@ if (-not $ApplicationRGOnly) {
     Sort-Object -Property Name -Descending |
     Select-Object -First 1 -ExpandProperty Id
 
+    $MGParametersFile = get-content './ApplicationRG.parameters.json' -raw | ConvertFrom-Json
+    $MGParametersFile.parameters.storageAccountName.value = $StorageAccountName
+    $MGParametersFile.parameters.storageContainerName.value = $StorageContainerName
+    $MGParametersFile | 
+    ConvertTo-Json | 
+    out-file ./ManagementRG.current.parameters.json -Force
+
     # Deploying this environment incrementally so the template specs don't disappear.
     # Otherwise, we have a Chicken/Egg scenario.
     Write-Host ""; Write-Host "Creating storage resources in the management group to host the DSC configuration and application code."
     $ManagementRGDeploymentParameters = @{
-        ResourceGroupName = $ManagementResourceGroupName
-        TemplateSpecId    = $ManagementRGSpecId
-        Mode              = 'Incremental'
-        Force             = $true
+        ResourceGroupName     = $ManagementResourceGroupName
+        TemplateSpecId        = $ManagementRGSpecId
+        TemplateParameterFile = './ManagementRG.current.parameters.json'
+        Mode                  = 'Incremental'
+        Force                 = $true
     }
 
     New-AzResourceGroupDeployment @ManagementRGDeploymentParameters | Out-Null
+    Remove-Item -Path ./ManagementRG.current.parameters.json -Force
+
 }
 
 Write-Host ""; Write-Host 'Getting the xWebAdministration module to package as part of the published DSC configuration.'
@@ -131,7 +142,7 @@ if (-not $ManagementRGOnly) {
     $ParametersFile.parameters.azureDevOpsToken.value = $AzureDevOpsToken
     $ParametersFile | 
     ConvertTo-Json | 
-    out-file ./current.parameters.json -Force
+    out-file ./ApplicationRG.current.parameters.json -Force
 
     if (-not $ApplicationRGSpecId) {
         Write-Host ""; Write-Host "Getting the current application resource group templatespec Id"
@@ -146,12 +157,12 @@ if (-not $ManagementRGOnly) {
     $FullDeploymentParameters = @{
         ResourceGroupName     = $ResourceGroupName
         TemplateSpecId        = $ApplicationRGSpecId
-        TemplateParameterFile = './current.parameters.json'
+        TemplateParameterFile = './ApplicationRG.current.parameters.json'
         Mode                  = 'Complete'
         Force                 = $true
     }
     New-AzResourceGroupDeployment @FullDeploymentParameters
-    Remove-Item -Path ./current.parameters.json -Force
+    Remove-Item -Path ./ApplicationRG.current.parameters.json -Force
 }
 
 $DSCStatus = Get-AzVMDscExtensionStatus -ResourceGroupName $ResourceGroupName -VMName mercuryhealthvm

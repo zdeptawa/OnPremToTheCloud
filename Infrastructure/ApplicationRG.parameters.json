@@ -7,7 +7,24 @@
         },
         "azureDevOpsToken": {
             "value": "REPLACEME"
+        },
+        "vmname": {
+            "value": "REPLACEME"
+        },
+        "username": {
+            "value": "abel" 
+        },
+        "password": {
+            "value": "P@ssw0rd!414"
+        },
+        "azureDevOpsEnvironmentName": {
+            "value": "Development"
+        },
+        "azureDevOpsProject": {
+            "value": "OnPremToTheCloud"
+        },
+        "azureDevOpsUrl": {
+            "value": "https://dev.azure.com/murawski-demo"
         }
-
     }
 }
