@@ -20,6 +20,20 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
+stages:
+  - stage: BuildEnvironment
+    jobs:
+      - job: SetPolicy
+        steps:
+        - task: PowerShell@2
+          inputs:
+          filePath: 'Infrastructure/taskSetPolicy.ps1'
+
+  #   - job: CreateResourceGroup
+      
+  #     steps:
+  #     - task: AzureResourceGroupDeployment@2
+
 # stages:
 #   - stage: Build
 #     jobs:
