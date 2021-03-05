@@ -9,12 +9,12 @@ if ($Policy) {
     }
     else {
         Write-Host ""; Write-Host "Updating Policy Definition $($PolicyJson.displayName)."
-        $Policy = Set-AzPolicyDefinition -Id $Policy.ResourceId -Policy $PolicyDefinitionPath -ErrorAction SilentlyContinue -WarningAction SilentlyContinue 
+        $Policy = Set-AzPolicyDefinition -Id $Policy.ResourceId -Policy $PolicyDefinitionPath #-ErrorAction SilentlyContinue -WarningAction SilentlyContinue 
     }
 }
 else {
     Write-Host "Creating New Policy Definition $($PolicyJson.displayName)."
-    $Policy = New-AzPolicyDefinition -Name $PolicyJson.displayName -Policy $PolicyDefinitionPath -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+    $Policy = New-AzPolicyDefinition -Name $PolicyJson.displayName -Policy $PolicyDefinitionPath #-ErrorAction SilentlyContinue -WarningAction SilentlyContinue
 }
 
 $Policy = Get-AzPolicyDefinition -Name $PolicyJson.displayName 
