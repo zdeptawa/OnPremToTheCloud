@@ -117,6 +117,8 @@ if (-not $ApplicationRGOnly) {
 
 }
 
+### YOU'LL WANT FROM HERE
+$ConfigurationPath = 'MercHealthConfig.ps1'
 Write-Host ""; Write-Host 'Getting the xWebAdministration module to package as part of the published DSC configuration.'
 if (-not (Get-Module -ListAvailable xWebAdministration)) {
     Install-Module xWebAdministration -RequiredVersion 3.2.0 -Scope CurrentUser
@@ -134,6 +136,9 @@ $Parameters = @{
     Force              = $true
 }
 Publish-AzVMDscConfiguration @Parameters | Out-Null
+### To here for the dsc publish.  You'll need to provide a resource group name, storage account and storage container name
+
+
 
 if (-not $ManagementRGOnly) {
     
