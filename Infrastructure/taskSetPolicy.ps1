@@ -17,6 +17,7 @@ else {
     $Policy = New-AzPolicyDefinition -Name $PolicyJson.displayName -Policy $PolicyDefinitionPath -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
 }
 
+$Policy = Get-AzPolicyDefinition -Name $PolicyJson.displayName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
 $PolicyName = $PolicyJson.displayName.tolower() -replace '\s+', '-'
 $PolicyAssignment = Get-AzPolicyAssignment -Name $PolicyName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
 if (-not $PolicyAssignment) {
