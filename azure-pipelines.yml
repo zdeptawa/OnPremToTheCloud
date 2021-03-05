@@ -23,13 +23,22 @@ variables:
 stages:
   - stage: BuildEnvironment
     jobs:
-      - job: SetPolicy
+      # - job: SetPolicy
+      #   steps:
+      #   - task: AzurePowerShell@5
+      #     inputs:
+      #       azureSubscription: 'ca-zdeptawa-demo-test(d7e02429-9aef-419e-b1e3-a9ca66b40864)'
+      #       ScriptType: 'FilePath'
+      #       ScriptPath: 'Infrastructure/taskSetPolicy.ps1'
+      #       azurePowerShellVersion: 'LatestVersion'
+
+      - job: BuildDSC
         steps:
         - task: AzurePowerShell@5
           inputs:
             azureSubscription: 'ca-zdeptawa-demo-test(d7e02429-9aef-419e-b1e3-a9ca66b40864)'
             ScriptType: 'FilePath'
-            ScriptPath: 'Infrastructure/taskSetPolicy.ps1'
+            ScriptPath: 'Infrastructure/taskBuildDsc.ps1'
             azurePowerShellVersion: 'LatestVersion'
 
   #   - job: CreateResourceGroup
