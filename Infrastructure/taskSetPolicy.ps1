@@ -1,4 +1,4 @@
-$PolicyDefinitionPath = 'network-security-rule-with-port.json'
+$PolicyDefinitionPath = 'Infrastructure\network-security-rule-with-port.json'
 $PolicyJson = Get-Content $PolicyDefinitionPath -Raw | ConvertFrom-Json  
 
 Write-Host "Checking Azure Policy status"
