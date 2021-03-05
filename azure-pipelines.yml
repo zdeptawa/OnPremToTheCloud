@@ -27,7 +27,7 @@ stages:
         steps:
         - task: PowerShell@2
           inputs:
-          filePath: 'Infrastructure/taskSetPolicy.ps1'
+            filePath: 'Infrastructure/taskSetPolicy.ps1'
 
   #   - job: CreateResourceGroup
       
