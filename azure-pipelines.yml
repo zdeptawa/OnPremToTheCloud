@@ -43,7 +43,7 @@ stages:
             azurePowerShellVersion: 'LatestVersion'
 
   - stage: PrepareEnvironment
-    dependsOn: DesiredStateConfiguration
+    dependsOn: PrepareDesiredStateConfiguration
     jobs:
     - job: BuildResourceGroup     
       steps:
