@@ -55,65 +55,57 @@ stages:
           location: 'East US 2'
           templateLocation: 'URL of the file'
           csmFileLink: 'https://raw.githubusercontent.com/zdeptawa/OnPremToTheCloud/episode_5/Infrastructure/ApplicationRG.json'
-          #csmParametersFileLink: 'https://raw.githubusercontent.com/zdeptawa/OnPremToTheCloud/episode_5/Infrastructure/ApplicationRG.parameters.json'
-          overrideParameters: '-dscBlobStorageUri $(dscBlobStorageUri) -azureDevOpsToken $(azureDevOpsToken) -vmname $(vmname) -username $(username) -password $(password) -azureDevOpsEnvironmentName $(azureDevOpsEnvironmentName) -azureDevOpsProject $(azureDevOpsProject) -azureDevOpsUrl $(azureDevOpsUrl)'
+          overrideParameters: '-dscBlobStorageUri $(dscBlobStorageUri) -azureDevOpsToken $(azureDevOpsToken) -domainNameLabel $(domainNameLabel) -vmOsDiskStorageName $(vmOsDiskStorageName) -vmname $(vmname) -username $(username) -password $(password) -azureDevOpsEnvironmentName $(azureDevOpsEnvironmentName) -azureDevOpsProject $(azureDevOpsProject) -azureDevOpsUrl $(azureDevOpsUrl)'
           deploymentMode: 'Complete'
 
-# - stage: PrepareApplication
-#   dependsOn: PrepareEnvironment
-#   jobs:
-#   - job: Build
+  # - stage: PrepareApplication
+  #   dependsOn: PrepareEnvironment
+  #   jobs:
+  #   - job: Build
+  #     steps:
+  #     - task: NuGetToolInstaller@1
+  #     - task: NuGetCommand@2
+  #       inputs:
+  #         restoreSolution: '$(solution)'
+  #     - task: VSBuild@1
+  #       inputs:
+  #         solution: '$(solution)'
+  #         msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
+  #         platform: '$(buildPlatform)'
+  #         configuration: '$(buildConfiguration)'
+  #     - task: CopyFiles@2
+  #       inputs:
+  #         SourceFolder: '$(build.artifactStagingDirectory)'
+  #         Contents: '**/MercuryHealth.Web.zip'
+  #         TargetFolder: '$(build.artifactStagingDirectory)/artifacts'
+  #     - task: CopyFiles@2
+  #       inputs:
+  #         SourceFolder: '$(Build.SourcesDirectory)'
+  #         Contents: '**/*.dacpac'
+  #         flattenFolders: true
+  #         TargetFolder: '$(build.artifactStagingDirectory)/artifacts'
+  #     - task: PublishPipelineArtifact@1
+  #       inputs:
+  #         targetPath: '$(build.artifactStagingDirectory)/artifacts'
+  #         artifact: 'artifacts'
+  #         publishLocation: 'pipeline'
 
-#     steps:
-#     - task: NuGetToolInstaller@1
-      
-#     - task: NuGetCommand@2
-#       inputs:
-#         restoreSolution: '$(solution)'
-      
-#     - task: VSBuild@1
-#       inputs:
-#         solution: '$(solution)'
-#         msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
-#         platform: '$(buildPlatform)'
-#         configuration: '$(buildConfiguration)'
-      
-#     - task: CopyFiles@2
-#       inputs:
-#         SourceFolder: '$(build.artifactStagingDirectory)'
-#         Contents: '**/MercuryHealth.Web.zip'
-#         TargetFolder: '$(build.artifactStagingDirectory)/artifacts'
-      
-#     - task: CopyFiles@2
-#       inputs:
-#         SourceFolder: '$(Build.SourcesDirectory)'
-#         Contents: '**/*.dacpac'
-#         flattenFolders: true
-#         TargetFolder: '$(build.artifactStagingDirectory)/artifacts'
-      
-#     - task: PublishPipelineArtifact@1
-#       inputs:
-#         targetPath: '$(build.artifactStagingDirectory)/artifacts'
-#         artifact: 'artifacts'
-#         publishLocation: 'pipeline'
-
-
-#   - stage: DeployApplication
-#     dependsOn: PrepareApplication
-#     variables:
-#       - name: websiteName
-#         value: 'Mercury Health'
-#       - name: databaseName
-#         value: MercuryHealthDB
-#     jobs:
-#       - deployment: DeployTestApplication
-#         environment: 
-#           name: Development
-#           resourceType: VirtualMachine
-#           tags: mercuryweb
-#         strategy:
-#           runOnce:
-#             deploy:
-#               steps:
-#               - template: deploy-template.yml
+  # - stage: DeployApplication
+  #   dependsOn: PrepareApplication
+  #   variables:
+  #     - name: websiteName
+  #       value: 'Mercury Health'
+  #     - name: databaseName
+  #       value: MercuryHealthDB
+  #   jobs:
+  #     - deployment: DeployTestApplication
+  #       environment: 
+  #         name: Development
+  #         resourceType: VirtualMachine
+  #         tags: mercuryweb
+  #       strategy:
+  #         runOnce:
+  #           deploy:
+  #             steps:
+  #             - template: deploy-template.yml
             
