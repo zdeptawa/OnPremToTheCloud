@@ -19,37 +19,37 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release''
 
-stages:
-  - stage: DesiredStateConfiguration
-    jobs:
-      - job: BuildAndPublishDSC
-        steps:
-        - task: AzurePowerShell@5
-          inputs:
-            azureSubscription: "ca-zdeptawa-demo-test(d7e02429-9aef-419e-b1e3-a9ca66b40864)"
-            ScriptType: "FilePath"
-            ScriptPath: "Infrastructure/taskBuildDsc.ps1"
-            azurePowerShellVersion: "LatestVersion"
+  stages:
+    - stage: DesiredStateConfiguration
+      jobs:
+        - job: BuildAndPublishDSC
+          steps:
+          - task: AzurePowerShell@5
+            inputs:
+              azureSubscription: "ca-zdeptawa-demo-test(d7e02429-9aef-419e-b1e3-a9ca66b40864)"
+              ScriptType: "FilePath"
+              ScriptPath: "Infrastructure/taskBuildDsc.ps1"
+              azurePowerShellVersion: "LatestVersion"
 
-  # - stage: SetPolicy
-  #   jobs:
-  #    - job: SetPolicy
-  #      steps:
-  #      - task: AzurePowerShell@5
-  #        inputs:
-  #          azureSubscription: "ca-zdeptawa-demo-test(d7e02429-9aef-419e-b1e3-a9ca66b40864)"
-  #          ScriptType: "FilePath"
-  #          ScriptPath: "Infrastructure/taskSetPolicy.ps1"
-  #          azurePowerShellVersion: "LatestVersion"
+# - stage: SetPolicy
+#   jobs:
+#    - job: SetPolicy
+#      steps:
+#      - task: AzurePowerShell@5
+#        inputs:
+#          azureSubscription: "ca-zdeptawa-demo-test(d7e02429-9aef-419e-b1e3-a9ca66b40864)"
+#          ScriptType: "FilePath"
+#          ScriptPath: "Infrastructure/taskSetPolicy.ps1"
+#          azurePowerShellVersion: "LatestVersion"
 
 
 
-  # - stage: Environment
-  #   dependsOn: DesiredStateConfiguration
-  #   jobs:
-  #   - job: BuildResourceGroup     
-  #     steps:
-  #     - task: AzureResourceGroupDeployment@2
+# - stage: Environment
+#   dependsOn: DesiredStateConfiguration
+#   jobs:
+#   - job: BuildResourceGroup     
+#     steps:
+#     - task: AzureResourceGroupDeployment@2
 
 
 #   - stage: Application
@@ -61,7 +61,7 @@ stages:
       
 #       - task: NuGetCommand@2
 #         inputs:
-#           restoreSolution: '$(solution)'
+#           restoreSolution: "$(solution)"
       
 #       - task: VSBuild@1
 #         inputs:
