@@ -17,7 +17,7 @@ pool:
 variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release''
+  buildConfiguration: 'Release'
 
   stages:
     - stage: DesiredStateConfiguration
@@ -26,10 +26,10 @@ variables:
           steps:
           - task: AzurePowerShell@5
             inputs:
-              azureSubscription: "ca-zdeptawa-demo-test(d7e02429-9aef-419e-b1e3-a9ca66b40864)"
-              ScriptType: "FilePath"
-              ScriptPath: "Infrastructure/taskBuildDsc.ps1"
-              azurePowerShellVersion: "LatestVersion"
+              azureSubscription: 'ca-zdeptawa-demo-test(d7e02429-9aef-419e-b1e3-a9ca66b40864)'
+              ScriptType: 'FilePath'
+              ScriptPath: 'Infrastructure/taskBuildDsc.ps1'
+              azurePowerShellVersion: 'LatestVersion'
 
 # - stage: SetPolicy
 #   jobs:
@@ -37,10 +37,10 @@ variables:
 #      steps:
 #      - task: AzurePowerShell@5
 #        inputs:
-#          azureSubscription: "ca-zdeptawa-demo-test(d7e02429-9aef-419e-b1e3-a9ca66b40864)"
-#          ScriptType: "FilePath"
-#          ScriptPath: "Infrastructure/taskSetPolicy.ps1"
-#          azurePowerShellVersion: "LatestVersion"
+#          azureSubscription: 'ca-zdeptawa-demo-test(d7e02429-9aef-419e-b1e3-a9ca66b40864)'
+#          ScriptType: 'FilePath'
+#          ScriptPath: 'Infrastructure/taskSetPolicy.ps1'
+#          azurePowerShellVersion: 'LatestVersion'
 
 
 
@@ -61,14 +61,14 @@ variables:
       
 #       - task: NuGetCommand@2
 #         inputs:
-#           restoreSolution: "$(solution)"
+#           restoreSolution: '$(solution)'
       
 #       - task: VSBuild@1
 #         inputs:
-#           solution: "$(solution)"
+#           solution: '$(solution)'
 #           msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
-#           platform: "$(buildPlatform)"
-#           configuration: "$(buildConfiguration)"
+#           platform: '$(buildPlatform)'
+#           configuration: '$(buildConfiguration)'
       
 #       - task: CopyFiles@2
 #         inputs:
