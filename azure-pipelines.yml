@@ -65,10 +65,10 @@ variables:
       
 #       - task: VSBuild@1
 #         inputs:
-#           solution: '$(solution)'
+#           solution: "$(solution)"
 #           msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
-#           platform: '$(buildPlatform)'
-#           configuration: '$(buildConfiguration)'
+#           platform: "$(buildPlatform)"
+#           configuration: "$(buildConfiguration)"
       
 #       - task: CopyFiles@2
 #         inputs:
