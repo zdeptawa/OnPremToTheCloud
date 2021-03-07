@@ -51,11 +51,11 @@ stages:
         inputs: 
           azureSubscription: 'ca-zdeptawa-demo-test(d7e02429-9aef-419e-b1e3-a9ca66b40864)'
           action: 'Create Or Update Resource Group'
-          resourceGroupName: 'onpremtothecloud-app'
+          resourceGroupName: 'MercuryHealth-dev'
           location: 'East US 2'
           templateLocation: 'URL of the file'
           csmFileLink: 'https://raw.githubusercontent.com/zdeptawa/OnPremToTheCloud/episode_5/Infrastructure/ApplicationRG.json'
-          csmParametersFileLink: 'https://raw.githubusercontent.com/zdeptawa/OnPremToTheCloud/episode_5/Infrastructure/ApplicationRG.parameters.json'
+          #csmParametersFileLink: 'https://raw.githubusercontent.com/zdeptawa/OnPremToTheCloud/episode_5/Infrastructure/ApplicationRG.parameters.json'
           overrideParameters: '-dscBlobStorageUri $(dscBlobStorageUri) -azureDevOpsToken $(azureDevOpsToken) -vmname $(vmname) -username $(username) -password $(password) -azureDevOpsEnvironmentName $(azureDevOpsEnvironmentName) -azureDevOpsProject $(azureDevOpsProject) -azureDevOpsUrl $(azureDevOpsUrl)'
           deploymentMode: 'Complete'
 
