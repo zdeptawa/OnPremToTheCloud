@@ -3,28 +3,28 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "dscBlobStorageUri": {
-            "value": "REPLACEME" 
+            "value": $(dscBlogStorageUri) 
         },
         "azureDevOpsToken": {
-            "value": "REPLACEME"
+            "value": $(azureDevOpsToken)
         },
         "vmname": {
-            "value": "REPLACEME"
+            "value": $(vmname)
         },
         "username": {
-            "value": "abel" 
+            "value": $(username)
         },
         "password": {
-            "value": "P@ssw0rd!414"
+            "value": $(password)
         },
         "azureDevOpsEnvironmentName": {
-            "value": "Development"
+            "value": $(azureDevOpsEnvironmentName)
         },
         "azureDevOpsProject": {
-            "value": "OnPremToTheCloud"
+            "value": $(azureDevOpsProject)
         },
         "azureDevOpsUrl": {
-            "value": "https://dev.azure.com/murawski-demo"
+            "value": $(azureDevOpsURL)
         }
     }
 }
