@@ -19,7 +19,7 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
-  stages:
+stages:
   - stage: DesiredStateConfiguration
     jobs:
       - job: BuildAndPublishDSC
@@ -52,42 +52,42 @@ variables:
 #     - task: AzureResourceGroupDeployment@2
 
 
-#   - stage: Application
-#     jobs:
-#     - job: BuildApplication
+# - stage: Application
+#   jobs:
+#   - job: BuildApplication
 
-#       steps:
-#       - task: NuGetToolInstaller@1
+#     steps:
+#     - task: NuGetToolInstaller@1
       
-#       - task: NuGetCommand@2
-#         inputs:
-#           restoreSolution: '$(solution)'
+#     - task: NuGetCommand@2
+#       inputs:
+#         restoreSolution: '$(solution)'
       
-#       - task: VSBuild@1
-#         inputs:
-#           solution: '$(solution)'
-#           msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
-#           platform: '$(buildPlatform)'
-#           configuration: '$(buildConfiguration)'
+#     - task: VSBuild@1
+#       inputs:
+#         solution: '$(solution)'
+#         msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
+#         platform: '$(buildPlatform)'
+#         configuration: '$(buildConfiguration)'
       
-#       - task: CopyFiles@2
-#         inputs:
-#           SourceFolder: '$(build.artifactStagingDirectory)'
-#           Contents: '**/MercuryHealth.Web.zip'
-#           TargetFolder: '$(build.artifactStagingDirectory)/artifacts'
+#     - task: CopyFiles@2
+#       inputs:
+#         SourceFolder: '$(build.artifactStagingDirectory)'
+#         Contents: '**/MercuryHealth.Web.zip'
+#         TargetFolder: '$(build.artifactStagingDirectory)/artifacts'
       
-#       - task: CopyFiles@2
-#         inputs:
-#           SourceFolder: '$(Build.SourcesDirectory)'
-#           Contents: '**/*.dacpac'
-#           flattenFolders: true
-#           TargetFolder: '$(build.artifactStagingDirectory)/artifacts'
+#     - task: CopyFiles@2
+#       inputs:
+#         SourceFolder: '$(Build.SourcesDirectory)'
+#         Contents: '**/*.dacpac'
+#         flattenFolders: true
+#         TargetFolder: '$(build.artifactStagingDirectory)/artifacts'
       
-#       - task: PublishPipelineArtifact@1
-#         inputs:
-#           targetPath: '$(build.artifactStagingDirectory)/artifacts'
-#           artifact: 'artifacts'
-#           publishLocation: 'pipeline'
+#     - task: PublishPipelineArtifact@1
+#       inputs:
+#         targetPath: '$(build.artifactStagingDirectory)/artifacts'
+#         artifact: 'artifacts'
+#         publishLocation: 'pipeline'
 
 
 #   - stage: DeployToTest
