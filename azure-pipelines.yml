@@ -56,8 +56,8 @@ stages:
           templateLocation: 'URL of the file'
           csmFileLink: 'https://raw.githubusercontent.com/zdeptawa/OnPremToTheCloud/episode_5/Infrastructure/ApplicationRG.json'
           csmParametersFileLink: 'https://raw.githubusercontent.com/zdeptawa/OnPremToTheCloud/episode_5/Infrastructure/ApplicationRG.parameters.json'
+          overrideParameters: '-dscBlobStorageUri $(dscBlobStorageUri) -azureDevOpsToken $(azureDevOpsToken) -vmname $(vmname) -username $(username) -password $(password) -azureDevOpsEnvironmentName $(azureDevOpsEnvironmentName) -azureDevOpsProject $(azureDevOpsProject) -azureDevOpsUrl $(azureDevOpsUrl)'
           deploymentMode: 'Complete'
-
 
 # - stage: Application
 #   jobs:
