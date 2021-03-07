@@ -20,16 +20,16 @@ variables:
   buildConfiguration: 'Release'
 
   stages:
-    - stage: DesiredStateConfiguration
-      jobs:
-        - job: BuildAndPublishDSC
-          steps:
-          - task: AzurePowerShell@5
-            inputs:
-              azureSubscription: 'ca-zdeptawa-demo-test(d7e02429-9aef-419e-b1e3-a9ca66b40864)'
-              ScriptType: 'FilePath'
-              ScriptPath: 'Infrastructure/taskBuildDsc.ps1'
-              azurePowerShellVersion: 'LatestVersion'
+  - stage: DesiredStateConfiguration
+    jobs:
+      - job: BuildAndPublishDSC
+        steps:
+        - task: AzurePowerShell@5
+          inputs:
+            azureSubscription: 'ca-zdeptawa-demo-test(d7e02429-9aef-419e-b1e3-a9ca66b40864)'
+            ScriptType: 'FilePath'
+            ScriptPath: 'Infrastructure/taskBuildDsc.ps1'
+            azurePowerShellVersion: 'LatestVersion'
 
 # - stage: SetPolicy
 #   jobs:
