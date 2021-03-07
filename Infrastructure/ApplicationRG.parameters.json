@@ -3,28 +3,28 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "dscBlobStorageUri": {
-            "value": $(dscBlogStorageUri) 
+            "value": "$(dscBlogStorageUri)"
         },
         "azureDevOpsToken": {
-            "value": $(azureDevOpsToken)
+            "value": "$(azureDevOpsToken)"
         },
         "vmname": {
-            "value": $(vmname)
+            "value": "$(vmname)"
         },
         "username": {
-            "value": $(username)
+            "value": "$(username)"
         },
         "password": {
-            "value": $(password)
+            "value": "$(password)"
         },
         "azureDevOpsEnvironmentName": {
-            "value": $(azureDevOpsEnvironmentName)
+            "value": "$(azureDevOpsEnvironmentName)"
         },
         "azureDevOpsProject": {
-            "value": $(azureDevOpsProject)
+            "value": "$(azureDevOpsProject)"
         },
         "azureDevOpsUrl": {
-            "value": $(azureDevOpsURL)
+            "value": "$(azureDevOpsURL)"
         }
     }
 }
