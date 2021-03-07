@@ -27,6 +27,18 @@
                 "description": "Name of the virtual machine."
             }
         },
+        "vmOsDiskStorageName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the virtual machine disk storage."
+            }
+        },
+        "domainNameLabel": {
+            "type": "string",
+            "metadata": {
+                "description": "Custom prefix for the public IP's FQDN."
+            }
+        },
         "username": {
             "type": "string",
             "metadata": {
@@ -68,7 +80,7 @@
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-06-01",
             "tags": {
-                "displayName": "vmOsDiskStorage"
+                "displayName": "[parameters('vmOsDiskStorageName')]"
             },
             "location": "[parameters('location')]",
             "kind": "StorageV2",
@@ -88,7 +100,7 @@
             "properties": {
                 "publicIPAllocationMethod": "Dynamic",
                 "dnsSettings": {
-                    "domainNameLabel": "mercuryhealth"
+                    "domainNameLabel": "[parameters('domainNameLabel')]"
                 }
             }
         },
