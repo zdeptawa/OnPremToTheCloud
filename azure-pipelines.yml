@@ -59,9 +59,9 @@ stages:
           overrideParameters: '-dscBlobStorageUri $(dscBlobStorageUri) -azureDevOpsToken $(azureDevOpsToken) -vmname $(vmname) -username $(username) -password $(password) -azureDevOpsEnvironmentName $(azureDevOpsEnvironmentName) -azureDevOpsProject $(azureDevOpsProject) -azureDevOpsUrl $(azureDevOpsUrl)'
           deploymentMode: 'Complete'
 
-# - stage: Application
+# - stage: PrepareApplication
 #   jobs:
-#   - job: BuildApplication
+#   - job: Build
 
 #     steps:
 #     - task: NuGetToolInstaller@1
@@ -97,8 +97,8 @@ stages:
 #         publishLocation: 'pipeline'
 
 
-#   - stage: DeployToTest
-#     dependsOn: Build
+#   - stage: DeployApplication
+#     dependsOn: PrepareApplication
 #     variables:
 #       - name: websiteName
 #         value: 'Mercury Health'
