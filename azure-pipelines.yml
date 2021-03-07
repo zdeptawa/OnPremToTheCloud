@@ -31,7 +31,7 @@ stages:
   #           ScriptPath: 'Infrastructure/taskSetPolicy.ps1'
   #           azurePowerShellVersion: 'LatestVersion'
 
-  - stage: DesiredStateConfiguration
+  - stage: PrepareDesiredStateConfiguration
     jobs:
       - job: BuildAndPublishDSC
         steps:
@@ -42,7 +42,7 @@ stages:
             ScriptPath: 'Infrastructure/taskBuildDsc.ps1'
             azurePowerShellVersion: 'LatestVersion'
 
-  - stage: Environment
+  - stage: PrepareEnvironment
     dependsOn: DesiredStateConfiguration
     jobs:
     - job: BuildResourceGroup     
@@ -60,6 +60,7 @@ stages:
           deploymentMode: 'Complete'
 
 # - stage: PrepareApplication
+#   dependsOn: PrepareEnvironment
 #   jobs:
 #   - job: Build
 
