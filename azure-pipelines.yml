@@ -58,54 +58,54 @@ stages:
           overrideParameters: '-dscBlobStorageUri $(dscBlobStorageUri) -azureDevOpsToken $(azureDevOpsToken) -domainNameLabel $(domainNameLabel) -vmOsDiskStorageName $(vmOsDiskStorageName) -vmname $(vmname) -username $(username) -password $(password) -azureDevOpsEnvironmentName $(azureDevOpsEnvironmentName) -azureDevOpsProject $(azureDevOpsProject) -azureDevOpsUrl $(azureDevOpsUrl)'
           deploymentMode: 'Complete'
 
-  # - stage: PrepareDevApplication
-  #   dependsOn: PrepareDevEnvironment
-  #   jobs:
-  #   - job: Build
-  #     steps:
-  #     - task: NuGetToolInstaller@1
-  #     - task: NuGetCommand@2
-  #       inputs:
-  #         restoreSolution: '$(solution)'
-  #     - task: VSBuild@1
-  #       inputs:
-  #         solution: '$(solution)'
-  #         msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
-  #         platform: '$(buildPlatform)'
-  #         configuration: '$(buildConfiguration)'
-  #     - task: CopyFiles@2
-  #       inputs:
-  #         SourceFolder: '$(build.artifactStagingDirectory)'
-  #         Contents: '**/MercuryHealth.Web.zip'
-  #         TargetFolder: '$(build.artifactStagingDirectory)/artifacts'
-  #     - task: CopyFiles@2
-  #       inputs:
-  #         SourceFolder: '$(Build.SourcesDirectory)'
-  #         Contents: '**/*.dacpac'
-  #         flattenFolders: true
-  #         TargetFolder: '$(build.artifactStagingDirectory)/artifacts'
-  #     - task: PublishPipelineArtifact@1
-  #       inputs:
-  #         targetPath: '$(build.artifactStagingDirectory)/artifacts'
-  #         artifact: 'artifacts'
-  #         publishLocation: 'pipeline'
+  - stage: PrepareDevApplication
+    dependsOn: PrepareDevEnvironment
+    jobs:
+    - job: Build
+      steps:
+      - task: NuGetToolInstaller@1
+      - task: NuGetCommand@2
+        inputs:
+          restoreSolution: '$(solution)'
+      - task: VSBuild@1
+        inputs:
+          solution: '$(solution)'
+          msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
+          platform: '$(buildPlatform)'
+          configuration: '$(buildConfiguration)'
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: '$(build.artifactStagingDirectory)'
+          Contents: '**/MercuryHealth.Web.zip'
+          TargetFolder: '$(build.artifactStagingDirectory)/artifacts'
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: '$(Build.SourcesDirectory)'
+          Contents: '**/*.dacpac'
+          flattenFolders: true
+          TargetFolder: '$(build.artifactStagingDirectory)/artifacts'
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: '$(build.artifactStagingDirectory)/artifacts'
+          artifact: 'artifacts'
+          publishLocation: 'pipeline'
 
-  # - stage: DeployDevApplication
-  #   dependsOn: PrepareApplication
-  #   variables:
-  #     - name: websiteName
-  #       value: 'Mercury Health'
-  #     - name: databaseName
-  #       value: MercuryHealthDB
-  #   jobs:
-  #     - deployment: DeployTestApplication
-  #       environment: 
-  #         name: Development
-  #         resourceType: VirtualMachine
-  #         tags: mercuryweb
-  #       strategy:
-  #         runOnce:
-  #           deploy:
-  #             steps:
-  #             - template: deploy-template.yml
+  - stage: DeployDevApplication
+    dependsOn: PrepareApplication
+    variables:
+      - name: websiteName
+        value: 'Mercury Health'
+      - name: databaseName
+        value: MercuryHealthDB
+    jobs:
+      - deployment: DeployTestApplication
+        environment: 
+          name: Development
+          resourceType: VirtualMachine
+          tags: mercuryweb
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+              - template: deploy-template.yml
             
