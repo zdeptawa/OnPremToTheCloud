@@ -91,7 +91,7 @@ stages:
           publishLocation: 'pipeline'
 
   - stage: DeployDevApplication
-    dependsOn: PrepareApplication
+    dependsOn: PrepareDevApplication
     variables:
       - name: websiteName
         value: 'Mercury Health'
