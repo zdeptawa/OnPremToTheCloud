@@ -42,7 +42,7 @@ stages:
             ScriptPath: 'Infrastructure/taskBuildDsc.ps1'
             azurePowerShellVersion: 'LatestVersion'
 
-  - stage: PrepareEnvironment
+  - stage: PrepareDevEnvironment
     dependsOn: PrepareDesiredStateConfiguration
     jobs:
     - job: BuildResourceGroup     
@@ -58,8 +58,8 @@ stages:
           overrideParameters: '-dscBlobStorageUri $(dscBlobStorageUri) -azureDevOpsToken $(azureDevOpsToken) -domainNameLabel $(domainNameLabel) -vmOsDiskStorageName $(vmOsDiskStorageName) -vmname $(vmname) -username $(username) -password $(password) -azureDevOpsEnvironmentName $(azureDevOpsEnvironmentName) -azureDevOpsProject $(azureDevOpsProject) -azureDevOpsUrl $(azureDevOpsUrl)'
           deploymentMode: 'Complete'
 
-  # - stage: PrepareApplication
-  #   dependsOn: PrepareEnvironment
+  # - stage: PrepareDevApplication
+  #   dependsOn: PrepareDevEnvironment
   #   jobs:
   #   - job: Build
   #     steps:
@@ -90,7 +90,7 @@ stages:
   #         artifact: 'artifacts'
   #         publishLocation: 'pipeline'
 
-  # - stage: DeployApplication
+  # - stage: DeployDevApplication
   #   dependsOn: PrepareApplication
   #   variables:
   #     - name: websiteName
