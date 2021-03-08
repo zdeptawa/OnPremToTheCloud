@@ -274,7 +274,7 @@
                 "protectedSettings": {
                     "configurationArguments": {
                         "AppPoolCredential": {
-                            "userName": "abel",
+                            "userName": "[parameters('username')]",
                             "password": "[parameters('password')]"
                         },
                         "AzureDevOpsToken": "[parameters('azureDevOpsToken')]",
