@@ -107,7 +107,7 @@ stages:
   # Deploy the application
   # This is the final step - deploying the application we built in the first step of this pipeline to our infrastructure.
   - stage: DeployDevApplication
-    dependsOn: PrepareDevEnvironment
+    dependsOn: PrepareDevResourceGroup
     variables:
       - name: websiteName
         value: 'Mercury Health'
